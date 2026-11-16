@@ -1,0 +1,41 @@
+Read AGENTS.md first and follow it strictly.
+
+TASK: Implement Phase 1 only. Do NOT start Phase 2 or later.
+
+Project: FeeKeeper, a multi-tenant Gym & Coaching Class Fee Management SaaS.
+Stack: Java 21, Spring Boot 3.3+, Maven, Spring Web, Spring Data JPA, Spring Security (stateless JWT), Spring Validation, PostgreSQL, Flyway, Lombok, springdoc-openapi, Testcontainers, JUnit 5, Mockito.
+
+1. Project setup
+- Create the Maven project with package-by-feature layout: auth, tenant, member, payment, dashboard, notification, common.
+- application.yml with dev/test/prod profiles. All secrets and config come from environment variables (DB_URL, DB_USER, DB_PASSWORD, JWT_SECRET, JWT_EXPIRY_MINUTES). The app must fail to start in prod if JWT_SECRET is missing or shorter than 32 bytes.
+- docker-compose.yml with PostgreSQL, and a .env.example.
+- Flyway enabled, hibernate ddl-auto=validate.
+
+2. Entities and Flyway V1 migration (all business tables have a non-null, indexed tenant_id)
+- Tenant: id (UUID), businessName, ownerName, phone, upiId, createdAt
+- User: id, tenantId, email (globally unique), passwordHash, role (OWNER, STAFF), createdAt
+- Member: id, tenantId, fullName, phone, planName, planAmount (numeric 12,2), planDurationDays (30/90/180), joinDate, expiryDate, status (ACTIVE, EXPIRING_SOON, OVERDUE), lastReminderSentDate (nullable), deletedAt (nullable), createdAt, updatedAt; unique (tenantId, phone)
+- Payment: id, tenantId, memberId, amountPaid (numeric 12,2), paymentMode (UPI, CASH), paymentDate, receiptNumber (unique per tenant), createdAt
+- ReceiptSequence: tenantId, year, lastValue
+- Indexes on (tenant_id, status), (tenant_id, expiry_date), (tenant_id, phone).
+- Create the entities, repositories (every business-data method takes tenantId), and a MemberStatusCalculator (OVERDUE if expiry < today; EXPIRING_SOON if today <= expiry <= today + 5 days; else ACTIVE) using an injected Clock in Asia/Kolkata.
+
+3. Auth and security
+- POST /api/auth/register: creates Tenant + OWNER user in one transaction. Validate email, phone, and password (min 8 chars). BCrypt.
+- POST /api/auth/login: returns a JWT with userId, tenantId, role, and expiry. Use a generic error message on failure.
+- JwtAuthenticationFilter + a TenantContext helper (getCurrentTenantId()) reading tenantId only from the SecurityContext.
+- Stateless sessions, configurable CORS, basic rate limiting on both auth endpoints.
+- Add a Hibernate @Filter (or equivalent) on tenant_id as a second line of defense, and return 404 for other tenants' records.
+
+4. Global exception handling
+- @RestControllerAdvice returning consistent problem-detail JSON (timestamp, status, error code, message, path, field errors). Handle validation, not found, access denied, conflict, and unexpected errors. No stack traces in responses. Add a request-id in logs via MDC.
+
+5. Tests (must pass)
+- Unit tests: JWT generation/validation, MemberStatusCalculator (boundary days 0, 5, 6, -1), registration and login.
+- Integration tests with Testcontainers: register -> login -> token contains the correct tenantId; two tenants registered, and tenant A cannot read tenant B's data through repositories or the filter.
+
+6. Finish
+- Run `mvn clean verify` and make sure it passes.
+- Write docs/DECISIONS.md listing every assumption you made.
+- Commit with a clear message, then summarize what you built, how to run it, and any known gaps.
+- Stop and wait for my approval before Phase 2.

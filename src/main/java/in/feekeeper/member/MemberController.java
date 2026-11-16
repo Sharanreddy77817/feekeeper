@@ -1,6 +1,7 @@
 package in.feekeeper.member;
 
 import in.feekeeper.member.dto.*;
+import in.feekeeper.notification.WhatsAppLinkService;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +19,11 @@ import java.util.UUID;
 @Tag(name = "Members", description = "Tenant-scoped member management")
 public class MemberController {
     private final MemberService service;
-    public MemberController(MemberService service) { this.service = service; }
+    private final WhatsAppLinkService whatsAppLinks;
+    public MemberController(MemberService service, WhatsAppLinkService whatsAppLinks) {
+        this.service = service;
+        this.whatsAppLinks = whatsAppLinks;
+    }
 
     @PostMapping
     @Operation(summary = "Create a member")
@@ -48,4 +53,8 @@ public class MemberController {
                                      @PageableDefault(size = 20, sort = "fullName") Pageable pageable) {
         return service.list(search, status, pageable);
     }
+
+    @GetMapping("/{id}/whatsapp-link")
+    @Operation(summary = "Create a prefilled wa.me reminder link")
+    public WhatsAppLinkResponse whatsAppLink(@PathVariable UUID id) { return whatsAppLinks.create(id); }
 }

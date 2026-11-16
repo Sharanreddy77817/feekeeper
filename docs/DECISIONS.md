@@ -22,3 +22,16 @@
 - Dashboard counts use aggregate repository queries. Active is the stored `ACTIVE` status; expiring and overdue totals are derived from expiry dates relative to the injected IST clock. Revenue uses the current IST calendar month.
 - Added OpenPDF 2.0.3 because Phase 2 requires server-generated PDF receipts and the JDK/Spring stack has no PDF renderer.
 - UPI IDs are optional; when present they must have a handle and provider separated by `@` and are normalized to lowercase.
+
+## Phase 3
+
+- Phase 3 contains scheduler and WhatsApp notification backend work only. No frontend, mobile, or Phase 4 code was added.
+- Added ShedLock Spring and JDBC-provider dependencies because the daily job must have a PostgreSQL-backed distributed lock across application instances. Migration V3 creates only ShedLock's lock table.
+- `SystemMemberRepository` is the sole intentional cross-tenant data path. It is a JDBC-only repository in the notification package, is not referenced by any controller, and exists only for the scheduled system job. API repositories remain explicitly tenant-scoped.
+- Status refresh uses UUID keyset pages and calls `MemberStatusCalculator` for every non-deleted member, preserving the calculator as the single source of status rules without loading the full member table.
+- Reminder scanning also uses bounded UUID keyset pages. Eligibility is exactly expiry `today + 3`, or expiry from `today - 7` through `today - 1`; deleted members and records already sent today are skipped.
+- Notification delivery is at-least-once across process crashes: `lastReminderSentDate` is written only after provider success. ShedLock and the same-day marker prevent normal duplicate runs, but a crash after provider acceptance and before the marker update may require provider-side idempotency in a future provider integration.
+- The REST notification implementation uses the JDK HTTP client through Spring `RestClient`, so no additional HTTP-client dependency is needed. Connect/read timeouts are configurable; retries with backoff apply only to timeouts/connection failures and HTTP 5xx responses.
+- AiSensy and Interakt payload shapes are isolated behind provider mappers. Template name, language, and message parameters originate from the central English formatter; a future Hindi formatter can consume the same `ReminderMessage` contract.
+- The manual wa.me endpoint uses digits-only international addressing (`91` plus a 10-digit Indian number), as required by wa.me, even though stored/displayed normalization uses `+91`.
+- For members who are not overdue, the manual wa.me fallback uses the upcoming-expiry template. The scheduled job uses that template only at exactly three days before expiry.

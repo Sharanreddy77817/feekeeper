@@ -26,6 +26,17 @@ app:
   auth-rate-limit:
     attempts: 10
     window-minutes: 1
+  whatsapp:
+    provider: ${WHATSAPP_PROVIDER:mock}
+    base-url: ${WHATSAPP_BASE_URL:http://localhost:9999}
+    api-key: ${WHATSAPP_API_KEY:}
+    template-name: ${WHATSAPP_TEMPLATE_NAME:fee_reminder}
+    language-code: ${WHATSAPP_LANGUAGE_CODE:en}
+    connect-timeout: ${WHATSAPP_CONNECT_TIMEOUT:3s}
+    read-timeout: ${WHATSAPP_READ_TIMEOUT:10s}
+    retry-attempts: ${WHATSAPP_RETRY_ATTEMPTS:3}
+    retry-backoff: ${WHATSAPP_RETRY_BACKOFF:500ms}
+    batch-size: ${WHATSAPP_BATCH_SIZE:100}
 ---
 spring:
   config:

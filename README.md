@@ -30,6 +30,7 @@ Run `mvn clean verify`. Integration tests use a disposable PostgreSQL Testcontai
 - `PUT /api/members/{id}`
 - `DELETE /api/members/{id}` (soft delete)
 - `GET /api/members?search=&status=&page=&size=&sort=`
+- `GET /api/members/{id}/whatsapp-link`
 - `POST /api/payments/mark-paid/{memberId}` (requires `Idempotency-Key`)
 - `GET /api/payments?memberId=&fromDate=&toDate=&page=&size=`
 - `GET /api/payments/{id}/receipt.pdf`
@@ -48,3 +49,19 @@ The generated OpenAPI 3 document is available at `http://localhost:8080/v3/api-d
 - A payment defaults to the member's plan amount when `amountPaid` is omitted. Modes are `UPI` and `CASH`.
 - Reusing an `Idempotency-Key` within a tenant returns the original payment. Receipt numbers use `FK-YYYY-000001` and increment independently per tenant and year.
 - Dashboard dates and monthly revenue use the `Asia/Kolkata` business clock.
+
+## Phase 3 reminders
+
+The status and reminder job runs daily at 10:00 Asia/Kolkata. ShedLock stores its distributed lock in PostgreSQL so only one application instance performs the run. It processes members in bounded pages, refreshes statuses through `MemberStatusCalculator`, and sends reminders for memberships expiring in exactly three days or overdue by one through seven days. A successful send records the date; failed sends remain eligible and do not stop the batch.
+
+`WHATSAPP_PROVIDER` selects `mock` (the default), `aisensy`, or `interakt`. For a REST provider, configure:
+
+- `WHATSAPP_BASE_URL` and `WHATSAPP_API_KEY`
+- `WHATSAPP_TEMPLATE_NAME` and `WHATSAPP_LANGUAGE_CODE`
+- `WHATSAPP_CONNECT_TIMEOUT` and `WHATSAPP_READ_TIMEOUT`
+- `WHATSAPP_RETRY_ATTEMPTS` and `WHATSAPP_RETRY_BACKOFF`
+- `WHATSAPP_BATCH_SIZE`
+
+Only timeouts and HTTP 5xx responses are retried. The API key, full phone numbers, and provider request bodies are never logged. Provider templates must be approved in the corresponding WhatsApp Business account before using a REST provider.
+
+The tenant-scoped `whatsapp-link` endpoint is a free manual fallback. It returns a URL in the form `https://wa.me/91...?...` with the same centrally formatted English reminder text prefilled.

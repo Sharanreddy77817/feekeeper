@@ -1,6 +1,6 @@
 # FeeKeeper
 
-FeeKeeper is a multi-tenant fee-management SaaS backend for small Indian gyms and coaching classes.
+FeeKeeper is a multi-tenant fee-management SaaS for small Indian gyms and coaching classes, with a Spring Boot API and responsive Thymeleaf interface.
 
 ## Prerequisites
 
@@ -15,7 +15,9 @@ FeeKeeper is a multi-tenant fee-management SaaS backend for small Indian gyms an
 3. Export the variables from `.env` in your shell.
 4. Run: `mvn spring-boot:run -Dspring-boot.run.profiles=dev`
 
-OpenAPI is available at `http://localhost:8080/swagger-ui.html`.
+Open `http://localhost:8080/register` to create the first business, or `/login` for an existing account. The dashboard supports member search and filtering, add/edit/delete, one-click renewal, PDF receipt download/printing, and WhatsApp reminders. Business details and logout are under `/settings`.
+
+The interface uses Tailwind's CDN build, so the browser needs internet access for styling. There is no Node installation or frontend build step. OpenAPI remains available at `http://localhost:8080/swagger-ui.html`.
 
 ## Verify
 
@@ -65,3 +67,11 @@ The status and reminder job runs daily at 10:00 Asia/Kolkata. ShedLock stores it
 Only timeouts and HTTP 5xx responses are retried. The API key, full phone numbers, and provider request bodies are never logged. Provider templates must be approved in the corresponding WhatsApp Business account before using a REST provider.
 
 The tenant-scoped `whatsapp-link` endpoint is a free manual fallback. It returns a URL in the form `https://wa.me/91...?...` with the same centrally formatted English reminder text prefilled.
+
+## Phase 4 web interface
+
+- `/login` and `/register` handle authentication and store the access token in browser `sessionStorage`.
+- `/dashboard` and `/settings` are page shells guarded by JavaScript; every business API remains server-protected and redirects to login after a `401`.
+- Shared API behavior lives in `static/js/api.js`, including bearer headers, problem-detail parsing, session expiry, field errors, and authenticated blob downloads.
+- Dynamic member and error content is rendered with `textContent`; user-controlled HTML is never injected.
+- See [docs/MANUAL_TESTS.md](docs/MANUAL_TESTS.md) for the full mobile, payment, receipt, settings, logout, and cross-tenant checklist.

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Dashboard')}"></head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+<nav th:replace="~{fragments :: nav('dashboard')}"></nav>
+<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+    <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div><p class="text-sm font-bold uppercase tracking-[.18em] text-indigo-600">Overview</p><h1 class="mt-1 text-3xl font-black tracking-tight">Your fee dashboard</h1><p class="mt-1 text-slate-600">Members, renewals, and collections in one place.</p></div>
+        <button id="add-member" class="focus-ring rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white shadow-sm hover:bg-indigo-700">+ Add member</button>
+    </header>
+
+    <section aria-labelledby="summary-heading">
+        <h2 id="summary-heading" class="sr-only">Business summary</h2>
+        <div id="summary-loading" class="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Loading summary">
+            <div class="h-28 animate-pulse rounded-2xl bg-slate-200"></div><div class="h-28 animate-pulse rounded-2xl bg-slate-200"></div><div class="h-28 animate-pulse rounded-2xl bg-slate-200"></div><div class="h-28 animate-pulse rounded-2xl bg-slate-200"></div>
+        </div>
+        <div id="summary-error" class="hidden rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800" role="alert"><span>Could not load the summary.</span> <button id="retry-summary" class="font-bold underline">Retry</button></div>
+        <div id="summary-cards" class="hidden grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <button data-summary-status="ACTIVE" class="focus-ring rounded-2xl border border-green-200 bg-green-50 p-4 text-left hover:border-green-400"><span class="text-sm font-bold text-green-800">Active</span><strong id="active-count" class="mt-2 block text-3xl font-black text-green-950">0</strong></button>
+            <button data-summary-status="EXPIRING_SOON" class="focus-ring rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left hover:border-amber-400"><span class="text-sm font-bold text-amber-800">Expiring soon</span><strong id="expiring-count" class="mt-2 block text-3xl font-black text-amber-950">0</strong></button>
+            <button data-summary-status="OVERDUE" class="focus-ring rounded-2xl border border-red-200 bg-red-50 p-4 text-left hover:border-red-400"><span class="text-sm font-bold text-red-800">Overdue</span><strong id="overdue-count" class="mt-2 block text-3xl font-black text-red-950">0</strong></button>
+            <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4"><span class="text-sm font-bold text-indigo-800">Revenue this month</span><strong id="revenue-total" class="mt-2 block text-2xl font-black text-indigo-950">₹0.00</strong></div>
+        </div>
+    </section>
+
+    <section class="mt-7 rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="members-heading">
+        <div class="border-b border-slate-200 p-4 sm:p-5">
+            <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div><h2 id="members-heading" class="text-xl font-black">Members</h2><p class="text-sm text-slate-500">Search, renew, edit, or send a reminder.</p></div>
+                <div class="grid gap-3 sm:grid-cols-[minmax(220px,1fr)_180px]">
+                    <div><label for="member-search" class="sr-only">Search members</label><input id="member-search" type="search" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" placeholder="Search name or phone"></div>
+                    <div><label for="status-filter" class="sr-only">Filter by status</label><select id="status-filter" class="focus-ring w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5"><option value="">All statuses</option><option value="ACTIVE">Active</option><option value="EXPIRING_SOON">Expiring soon</option><option value="OVERDUE">Overdue</option></select></div>
+                </div>
+            </div>
+        </div>
+        <div id="members-loading" class="p-8 text-center text-slate-500" role="status">Loading members…</div>
+        <div id="members-error" class="hidden p-8 text-center" role="alert"><p class="font-semibold text-red-700">Could not load members.</p><button id="retry-members" class="mt-2 font-bold text-indigo-700 underline">Try again</button></div>
+        <div id="members-empty" class="hidden p-10 text-center"><div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-slate-100 text-xl" aria-hidden="true">⌕</div><h3 class="mt-3 font-bold">No members found</h3><p class="mt-1 text-sm text-slate-500">Adjust the search or add your first member.</p></div>
+        <div id="members-content" class="hidden">
+            <div class="desktop-only overflow-x-auto"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-5 py-3">Member</th><th class="px-5 py-3">Plan</th><th class="px-5 py-3">Expiry</th><th class="px-5 py-3">Status</th><th class="px-5 py-3 text-right">Actions</th></tr></thead><tbody id="members-table" class="divide-y divide-slate-100"></tbody></table></div>
+            <div id="members-mobile" class="mobile-only divide-y divide-slate-100"></div>
+            <div class="flex items-center justify-between border-t border-slate-200 px-4 py-3"><button id="previous-page" class="focus-ring rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold disabled:opacity-40">Previous</button><span id="page-label" class="text-sm text-slate-600">Page 1</span><button id="next-page" class="focus-ring rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold disabled:opacity-40">Next</button></div>
+        </div>
+    </section>
+</main>
+
+<dialog id="member-dialog" class="w-[calc(100%_-_2rem)] max-w-xl rounded-2xl p-0 shadow-2xl">
+    <form id="member-form" class="max-h-[90vh] overflow-y-auto p-5 sm:p-7" novalidate>
+        <div class="flex items-center justify-between"><h2 id="member-dialog-title" class="text-2xl font-black">Add member</h2><button type="button" data-close-dialog="member-dialog" class="focus-ring rounded-lg p-2 text-2xl text-slate-500" aria-label="Close">×</button></div>
+        <input type="hidden" id="member-id" name="id">
+        <div class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div class="sm:col-span-2"><label for="member-name" class="mb-1.5 block text-sm font-bold">Full name</label><input id="member-name" name="fullName" maxlength="120" required class="focus-ring w-full rounded-xl border border-slate-300 px-3 py-2.5"><p data-error-for="fullName" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="member-phone" class="mb-1.5 block text-sm font-bold">Phone</label><input id="member-phone" name="phone" inputmode="tel" required class="focus-ring w-full rounded-xl border border-slate-300 px-3 py-2.5"><p data-error-for="phone" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="member-plan" class="mb-1.5 block text-sm font-bold">Plan name</label><input id="member-plan" name="planName" maxlength="100" required class="focus-ring w-full rounded-xl border border-slate-300 px-3 py-2.5"><p data-error-for="planName" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="member-amount" class="mb-1.5 block text-sm font-bold">Plan amount (₹)</label><input id="member-amount" name="planAmount" type="number" min="0.01" step="0.01" required class="focus-ring w-full rounded-xl border border-slate-300 px-3 py-2.5"><p data-error-for="planAmount" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="member-duration" class="mb-1.5 block text-sm font-bold">Duration</label><select id="member-duration" name="planDurationDays" required class="focus-ring w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5"><option value="30">30 days</option><option value="90">90 days</option><option value="180">180 days</option></select><p data-error-for="planDurationDays" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div class="sm:col-span-2"><label for="member-join-date" class="mb-1.5 block text-sm font-bold">Join date</label><input id="member-join-date" name="joinDate" type="date" required class="focus-ring w-full rounded-xl border border-slate-300 px-3 py-2.5"><p data-error-for="joinDate" class="mt-1 hidden text-sm text-red-600"></p></div>
+        </div>
+        <div id="member-form-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+        <div class="mt-6 flex justify-end gap-3"><button type="button" data-close-dialog="member-dialog" class="rounded-xl border border-slate-300 px-4 py-2.5 font-bold">Cancel</button><button id="save-member" class="rounded-xl bg-indigo-600 px-5 py-2.5 font-bold text-white disabled:opacity-60">Save member</button></div>
+    </form>
+</dialog>
+
+<dialog id="payment-dialog" class="w-[calc(100%_-_2rem)] max-w-md rounded-2xl p-0 shadow-2xl">
+    <div class="p-5 sm:p-7">
+        <div class="flex items-center justify-between"><div><p class="text-sm font-bold text-indigo-600">One-click renewal</p><h2 class="text-2xl font-black">Mark paid</h2></div><button type="button" data-close-dialog="payment-dialog" class="focus-ring rounded-lg p-2 text-2xl text-slate-500" aria-label="Close">×</button></div>
+        <form id="payment-form" class="mt-5" novalidate>
+            <p id="payment-member-name" class="font-bold"></p>
+            <label for="payment-amount" class="mt-4 mb-1.5 block text-sm font-bold">Amount paid (₹)</label><input id="payment-amount" name="amountPaid" type="number" min="0.01" step="0.01" required class="focus-ring w-full rounded-xl border border-slate-300 px-3 py-2.5"><p data-error-for="amountPaid" class="mt-1 hidden text-sm text-red-600"></p>
+            <fieldset class="mt-4"><legend class="mb-2 text-sm font-bold">Payment mode</legend><div class="grid grid-cols-2 gap-2"><label class="cursor-pointer rounded-xl border border-slate-300 p-3 text-center font-bold has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50 has-[:checked]:text-indigo-700"><input type="radio" name="paymentMode" value="UPI" checked class="sr-only">UPI</label><label class="cursor-pointer rounded-xl border border-slate-300 p-3 text-center font-bold has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50 has-[:checked]:text-indigo-700"><input type="radio" name="paymentMode" value="CASH" class="sr-only">Cash</label></div></fieldset>
+            <div id="payment-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+            <button id="confirm-payment" class="mt-6 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white disabled:opacity-60">Confirm payment</button>
+        </form>
+        <section id="payment-success" class="mt-5 hidden rounded-2xl border border-green-200 bg-green-50 p-4" aria-live="polite"><h3 class="font-black text-green-900">Payment recorded</h3><p id="payment-success-detail" class="mt-1 text-sm text-green-800"></p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button id="download-receipt" class="rounded-lg bg-white px-3 py-2 text-sm font-bold text-green-900 shadow-sm">Download receipt</button><button id="print-receipt" class="rounded-lg bg-white px-3 py-2 text-sm font-bold text-green-900 shadow-sm">Print receipt</button><a id="share-receipt" target="_blank" rel="noopener" class="rounded-lg bg-green-700 px-3 py-2 text-center text-sm font-bold text-white">WhatsApp receipt</a></div></section>
+    </div>
+</dialog>
+
+<div th:replace="~{fragments :: toast}"></div>
+<script defer th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

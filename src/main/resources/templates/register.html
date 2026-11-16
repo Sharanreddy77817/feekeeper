@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Register')}"></head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+<main class="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+    <div class="mb-7 text-center"><a href="/login" class="inline-flex items-center gap-2 font-black text-slate-900"><span class="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white">₹</span> FeeKeeper</a><h1 class="mt-5 text-3xl font-black tracking-tight">Register your business</h1><p class="mt-2 text-slate-600">Start tracking member fees in a few minutes.</p></div>
+    <form id="register-form" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8" novalidate>
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div><label for="businessName" class="mb-2 block text-sm font-bold">Business name</label><input id="businessName" name="businessName" maxlength="150" required class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-3"><p data-error-for="businessName" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="ownerName" class="mb-2 block text-sm font-bold">Owner name</label><input id="ownerName" name="ownerName" maxlength="120" required class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-3"><p data-error-for="ownerName" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="phone" class="mb-2 block text-sm font-bold">Mobile number</label><input id="phone" name="phone" inputmode="tel" autocomplete="tel" required pattern="(?:\+91)?[6-9][0-9]{9}" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="9876543210"><p data-error-for="phone" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="upiId" class="mb-2 block text-sm font-bold">UPI ID <span class="font-normal text-slate-500">(optional)</span></label><input id="upiId" name="upiId" maxlength="100" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="name@bank"><p data-error-for="upiId" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="email" class="mb-2 block text-sm font-bold">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-3"><p data-error-for="email" class="mt-1 hidden text-sm text-red-600"></p></div>
+            <div><label for="password" class="mb-2 block text-sm font-bold">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-3"><p data-error-for="password" class="mt-1 hidden text-sm text-red-600"></p></div>
+        </div>
+        <div id="register-error" class="mt-5 hidden rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700" role="alert"></div>
+        <button id="register-submit" type="submit" class="focus-ring mt-6 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-60">Create account</button>
+        <p class="mt-6 text-center text-sm text-slate-600">Already registered? <a href="/login" class="font-bold text-indigo-700 hover:underline">Sign in</a></p>
+    </form>
+</main>
+<div th:replace="~{fragments :: toast}"></div>
+<script defer th:src="@{/js/register.js}"></script>
+</body>
+</html>

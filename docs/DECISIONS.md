@@ -35,3 +35,13 @@
 - AiSensy and Interakt payload shapes are isolated behind provider mappers. Template name, language, and message parameters originate from the central English formatter; a future Hindi formatter can consume the same `ReminderMessage` contract.
 - The manual wa.me endpoint uses digits-only international addressing (`91` plus a 10-digit Indian number), as required by wa.me, even though stored/displayed normalization uses `+91`.
 - For members who are not overdue, the manual wa.me fallback uses the upcoming-expiry template. The scheduled job uses that template only at exactly three days before expiry.
+
+## Phase 4
+
+- Phase 4 adds only the Spring Boot-served web interface. No mobile client or Phase 5 work was added, and backend business services/repositories were unchanged.
+- Added `spring-boot-starter-thymeleaf` because Phase 4 explicitly requires server-rendered page shells and reusable fragments. Tailwind is loaded from its CDN and vanilla JavaScript is served as static resources, so there is no Node build step.
+- Page routes and static assets are permitted by Spring Security so normal browser navigation can load them. Because the JWT is intentionally kept in `sessionStorage` and cannot accompany a top-level HTML navigation, `/dashboard` and `/settings` are client-guarded shells; their REST data remains protected by the existing bearer-token security chain and unauthenticated API calls return `401`.
+- The JWT is stored under one `sessionStorage` key and is attached only by `api.js` in an `Authorization` header. It is removed on logout or API `401` and is never placed in URLs or logs.
+- All dynamic/user-provided values are assigned through `textContent` or form value properties. The UI does not use `innerHTML`.
+- A payment modal creates one UUID idempotency key when opened, disables submission while in flight, and retains that key for retries until the modal is reopened.
+- The WhatsApp receipt action is a client-generated text receipt link containing receipt number, amount, and new expiry. The PDF remains authenticated and is never exposed through a public URL.

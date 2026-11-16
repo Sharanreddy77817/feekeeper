@@ -26,4 +26,11 @@ public class Tenant {
         this.upiId = upiId;
         this.createdAt = createdAt;
     }
+
+    public void updateSettings(String businessName, String ownerName, String phone, String upiId) {
+        this.businessName = businessName;
+        this.ownerName = ownerName;
+        this.phone = phone;
+        this.upiId = upiId;
+    }
 }

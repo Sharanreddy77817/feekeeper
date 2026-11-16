@@ -29,6 +29,11 @@ public class GlobalExceptionHandler {
         return problem(404, "NOT_FOUND", ex.getMessage(), request, List.of());
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    ResponseEntity<ApiProblem> badRequest(BadRequestException ex, HttpServletRequest request) {
+        return problem(400, ex.getCode(), ex.getMessage(), request, List.of());
+    }
+
     @ExceptionHandler({InvalidCredentialsException.class})
     ResponseEntity<ApiProblem> invalidCredentials(RuntimeException ex, HttpServletRequest request) {
         return problem(401, "INVALID_CREDENTIALS", "Invalid email or password", request, List.of());

@@ -36,4 +36,29 @@ public class Member {
         this.joinDate = joinDate; this.expiryDate = expiryDate; this.status = status;
         this.createdAt = now; this.updatedAt = now;
     }
+
+    public void update(String fullName, String phone, String planName, BigDecimal planAmount,
+                       int planDurationDays, LocalDate joinDate, LocalDate expiryDate,
+                       MemberStatus status, Instant now) {
+        this.fullName = fullName;
+        this.phone = phone;
+        this.planName = planName;
+        this.planAmount = planAmount;
+        this.planDurationDays = planDurationDays;
+        this.joinDate = joinDate;
+        this.expiryDate = expiryDate;
+        this.status = status;
+        this.updatedAt = now;
+    }
+
+    public void softDelete(Instant now) {
+        this.deletedAt = now;
+        this.updatedAt = now;
+    }
+
+    public void renew(LocalDate newExpiryDate, MemberStatus status, Instant now) {
+        this.expiryDate = newExpiryDate;
+        this.status = status;
+        this.updatedAt = now;
+    }
 }

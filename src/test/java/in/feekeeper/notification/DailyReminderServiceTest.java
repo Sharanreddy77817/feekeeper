@@ -25,7 +25,7 @@ class DailyReminderServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        WhatsAppProperties properties = new WhatsAppProperties("mock", "http://localhost", "", "fee_reminder",
+        WhatsAppProperties properties = new WhatsAppProperties("mock", "http://localhost", "", "", "fee_reminder",
                 "en", Duration.ofSeconds(1), Duration.ofSeconds(1), 3, Duration.ZERO, 100);
         service = new DailyReminderService(members, notifications, properties,
                 new MemberStatusCalculator(CLOCK), CLOCK);

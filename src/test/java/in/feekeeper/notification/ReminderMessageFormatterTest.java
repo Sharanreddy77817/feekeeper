@@ -16,7 +16,7 @@ class ReminderMessageFormatterTest {
         String text = formatter.format(message(ReminderVariant.EXPIRING_IN_3_DAYS));
 
         assertThat(text).contains("Hello Asha", "Fit Gym", "expiring in 3 days",
-                "Amount due: ₹1000.00", "19 Nov 2026", "UPI ID: fit@bank");
+                "Amount due: \u20b91000.00", "19 Nov 2026", "UPI ID: fit@bank");
     }
 
     @Test
@@ -24,7 +24,7 @@ class ReminderMessageFormatterTest {
         String text = formatter.format(message(ReminderVariant.OVERDUE));
 
         assertThat(text).contains("Hello Asha", "Fit Gym", "membership fee is overdue",
-                "Amount due: ₹1000.00", "19 Nov 2026", "UPI ID: fit@bank");
+                "Amount due: \u20b91000.00", "19 Nov 2026", "UPI ID: fit@bank");
     }
 
     private ReminderMessage message(ReminderVariant variant) {

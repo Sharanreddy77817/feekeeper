@@ -7,8 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const memberForm = document.getElementById('member-form');
     const paymentDialog = document.getElementById('payment-dialog');
     const paymentForm = document.getElementById('payment-form');
+    const csvFileInput = document.getElementById('member-csv-file');
 
     document.getElementById('add-member').addEventListener('click', function () { openMemberDialog(); });
+    document.getElementById('import-members').addEventListener('click', function () { csvFileInput.click(); });
+    csvFileInput.addEventListener('change', importMembersCsv);
+    document.getElementById('download-csv-template').addEventListener('click', downloadCsvTemplate);
     document.getElementById('retry-summary').addEventListener('click', loadSummary);
     document.getElementById('retry-members').addEventListener('click', loadMembers);
     document.getElementById('previous-page').addEventListener('click', function () { if (state.page > 0) { state.page--; loadMembers(); } });
@@ -139,6 +143,66 @@ document.addEventListener('DOMContentLoaded', function () {
             FeeKeeperApi.showFieldErrors(memberForm, error.problem && error.problem.fieldErrors);
             const box = document.getElementById('member-form-error'); box.textContent = error.message; box.hidden = false; box.classList.remove('hidden');
         } finally { button.disabled = false; button.textContent = 'Save member'; }
+    }
+
+    async function importMembersCsv() {
+        const file = csvFileInput.files && csvFileInput.files[0];
+        if (!file) return;
+        const resultBox = document.getElementById('csv-import-result');
+        const summary = document.getElementById('csv-import-summary');
+        const errorsList = document.getElementById('csv-import-errors');
+        const importButton = document.getElementById('import-members');
+        errorsList.replaceChildren();
+        summary.textContent = '';
+        resultBox.classList.remove('hidden');
+        resultBox.hidden = false;
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            summary.textContent = 'Choose a .csv file.';
+            resultBox.classList.add('border-red-200', 'bg-red-50');
+            csvFileInput.value = '';
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file', file);
+        importButton.disabled = true;
+        importButton.textContent = 'Importing…';
+        try {
+            const result = await FeeKeeperApi.request('/api/members/import', {method: 'POST', body: formData});
+            summary.textContent = 'Imported ' + result.importedCount + ' of ' + result.totalRows + ' rows. ' + result.failedCount + ' failed.';
+            (result.errors || []).forEach(function (error) {
+                errorsList.append(node('li', 'mt-1', 'Row ' + error.rowNumber + ' — ' + error.field + ': ' + error.message));
+            });
+            resultBox.classList.remove('border-red-200', 'bg-red-50');
+            resultBox.classList.add(result.failedCount ? 'border-amber-200' : 'border-green-200', result.failedCount ? 'bg-amber-50' : 'bg-green-50');
+            if (result.importedCount > 0) {
+                state.page = 0;
+                await Promise.all([loadMembers(), loadSummary()]);
+            }
+            FeeKeeperApi.showToast(result.importedCount + ' member(s) imported.');
+        } catch (error) {
+            summary.textContent = error.message || 'CSV import failed. Check the file and try again.';
+            resultBox.classList.remove('border-amber-200', 'bg-amber-50', 'border-green-200', 'bg-green-50');
+            resultBox.classList.add('border-red-200', 'bg-red-50');
+            FeeKeeperApi.showToast('CSV import failed.', 'error');
+        } finally {
+            importButton.disabled = false;
+            importButton.textContent = 'Import CSV';
+            csvFileInput.value = '';
+        }
+    }
+
+    function downloadCsvTemplate(event) {
+        event.preventDefault();
+        const csv = ['fullName,phone,planName,planAmount,planDurationDays,joinDate',
+            'Ravi Kumar,9876543210,Monthly,700.00,30,' + localToday()].join('\r\n') + '\r\n';
+        const url = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'}));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'feekeeper-members-template.csv';
+        document.body.append(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
     }
 
     async function deleteMember(member) {

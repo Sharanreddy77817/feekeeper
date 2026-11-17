@@ -48,7 +48,7 @@ class RestWhatsAppNotificationServiceTest {
     }
 
     private RestWhatsAppNotificationService service(RestClient client, int attempts) {
-        WhatsAppProperties properties = new WhatsAppProperties("aisensy", "https://provider.test", "secret",
+        WhatsAppProperties properties = new WhatsAppProperties("aisensy", "https://provider.test", "secret", "",
                 "template", "en", Duration.ofSeconds(1), Duration.ofSeconds(1), attempts, Duration.ZERO, 100);
         ProviderPayloadMapper mapper = (message, text, props) ->
                 new ProviderPayloadMapper.ProviderRequest("/send", Map.of(), Map.of("text", text));

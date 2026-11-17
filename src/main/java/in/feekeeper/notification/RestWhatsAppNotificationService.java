@@ -50,6 +50,8 @@ public class RestWhatsAppNotificationService implements WhatsAppNotificationServ
         Object id = body.get("messageId");
         if (id == null) id = body.get("message_id");
         if (id == null) id = body.get("id");
+        if (id == null && body.get("messages") instanceof java.util.List<?> messages && !messages.isEmpty()
+                && messages.get(0) instanceof Map<?, ?> firstMessage) id = firstMessage.get("id");
         return id == null ? null : id.toString();
     }
 

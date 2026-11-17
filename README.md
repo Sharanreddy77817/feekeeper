@@ -40,8 +40,9 @@ Build the production image with `docker build -t feekeeper:local .`. Its health 
 | `CORS_ALLOWED_ORIGINS` | Yes | Exact comma-separated HTTPS origins; production default is empty. |
 | `AUTH_RATE_LIMIT_ATTEMPTS` | No | Auth attempts per fixed window; production default `5`. |
 | `AUTH_RATE_LIMIT_WINDOW_MINUTES` | No | Auth rate-limit window; default `1`. |
-| `WHATSAPP_PROVIDER` | No | `mock`, `aisensy`, or `interakt`; keep `mock` until templates are approved. |
-| `WHATSAPP_BASE_URL` / `WHATSAPP_API_KEY` | For REST provider | Provider endpoint and secret API key. |
+| `WHATSAPP_PROVIDER` | No | `mock` (default), `meta`, `aisensy`, or `interakt`; keep `mock` until setup and templates are approved. |
+| `WHATSAPP_BASE_URL` / `WHATSAPP_API_KEY` | For REST provider | Provider endpoint and secret. For Meta use `https://graph.facebook.com/v27.0` and a Meta access token. |
+| `WHATSAPP_PHONE_NUMBER_ID` | For Meta | Phone number ID from the WhatsApp Cloud API; store it in the host environment, not source control. |
 | `WHATSAPP_TEMPLATE_NAME` / `WHATSAPP_LANGUAGE_CODE` | For REST provider | Approved template settings. |
 | `WHATSAPP_CONNECT_TIMEOUT` / `WHATSAPP_READ_TIMEOUT` | No | Defaults `3s` / `10s`. |
 | `WHATSAPP_RETRY_ATTEMPTS` / `WHATSAPP_RETRY_BACKOFF` | No | Defaults `3` / `500ms`. |
@@ -75,11 +76,16 @@ For a single Docker host, copy `docker-compose.prod.example.yml`, supply environ
 4. Keep WhatsApp in mock mode until approved templates and provider credentials are ready. Test the manual `wa.me` fallback with the customer.
 5. Explain corrections, soft deletion, receipt download, logout, support, privacy notice, retention, and deletion-request handling.
 
+## Bulk member import
+
+From the dashboard, choose **CSV template** to download a sample, fill it, then choose **Import CSV**. Required columns are fullName, phone, planName, planAmount, planDurationDays, and joinDate. Phone numbers must be valid Indian mobile numbers; plan duration must be 30, 90, or 180 days; dates use YYYY-MM-DD. Quoted CSV fields can contain commas. Each file accepts up to 500 data rows and follows the configured upload size limit. Valid rows import even if other rows fail. The result reports imported/failed counts and row-specific errors. A phone already in this business or repeated in the same file is reported as a row error; other businesses' phone records are not visible to the import.
+
 ## API
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/members`
+- `POST /api/members/import` (multipart field `file`, CSV; up to 500 rows)
 - `GET /api/members/{id}`
 - `PUT /api/members/{id}`
 - `DELETE /api/members/{id}` (soft delete)
@@ -108,7 +114,17 @@ The generated OpenAPI 3 document is available at `http://localhost:8080/v3/api-d
 
 The status and reminder job runs daily at 10:00 Asia/Kolkata. ShedLock stores its distributed lock in PostgreSQL so only one application instance performs the run. It processes members in bounded pages, refreshes statuses through `MemberStatusCalculator`, and sends reminders for memberships expiring in exactly three days or overdue by one through seven days. A successful send records the date; failed sends remain eligible and do not stop the batch.
 
-`WHATSAPP_PROVIDER` selects `mock` (the default), `aisensy`, or `interakt`. For a REST provider, configure:
+`WHATSAPP_PROVIDER` selects `mock` (the default), `meta`, `aisensy`, or `interakt`. Meta Cloud API is supported directly without a BSP subscription. Meta message charges may still apply. Before enabling it, create a Meta business/WhatsApp account, register a sending number, create and get approval for a utility reminder template, then set these Render environment values:
+
+- `WHATSAPP_PROVIDER=meta`
+- `WHATSAPP_BASE_URL=https://graph.facebook.com/v27.0`
+- `WHATSAPP_API_KEY` to the Meta access token (keep it secret)
+- `WHATSAPP_PHONE_NUMBER_ID` to the registered phone number ID
+- `WHATSAPP_TEMPLATE_NAME` and `WHATSAPP_LANGUAGE_CODE` to the approved template
+
+The approved template body must use six text placeholders in this order: member name (`{{1}}`), business name (`{{2}}`), reminder variant text (`{{3}}`), amount (`{{4}}`), expiry date (`{{5}}`), and UPI ID or fallback instructions (`{{6}}`). For example: `Hello {{1}}, a reminder from {{2}}: {{3}} Amount due: ₹{{4}}. Expiry date: {{5}}. UPI ID: {{6}}. Thank you.` Only use this after Meta approves it and members have opted in to reminders. Keep mock selected until setup is complete.
+
+For AiSensy or Interakt, configure:
 
 - `WHATSAPP_BASE_URL` and `WHATSAPP_API_KEY`
 - `WHATSAPP_TEMPLATE_NAME` and `WHATSAPP_LANGUAGE_CODE`

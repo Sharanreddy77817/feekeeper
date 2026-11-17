@@ -9,6 +9,7 @@ public record WhatsAppProperties(
         String provider,
         String baseUrl,
         String apiKey,
+        String phoneNumberId,
         String templateName,
         String languageCode,
         Duration connectTimeout,

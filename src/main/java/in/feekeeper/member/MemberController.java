@@ -3,12 +3,15 @@ package in.feekeeper.member;
 import in.feekeeper.member.dto.*;
 import in.feekeeper.notification.WhatsAppLinkService;
 import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -19,9 +22,11 @@ import java.util.UUID;
 @Tag(name = "Members", description = "Tenant-scoped member management")
 public class MemberController {
     private final MemberService service;
+    private final MemberCsvImportService csvImportService;
     private final WhatsAppLinkService whatsAppLinks;
-    public MemberController(MemberService service, WhatsAppLinkService whatsAppLinks) {
+    public MemberController(MemberService service, MemberCsvImportService csvImportService, WhatsAppLinkService whatsAppLinks) {
         this.service = service;
+        this.csvImportService = csvImportService;
         this.whatsAppLinks = whatsAppLinks;
     }
 
@@ -29,6 +34,21 @@ public class MemberController {
     @Operation(summary = "Create a member")
     public ResponseEntity<MemberResponse> create(@Valid @RequestBody MemberRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
+    }
+
+    @PostMapping(path = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Import members from CSV", description = "Imports up to 500 member rows. Required columns: fullName, phone, planName, planAmount, planDurationDays, joinDate. Invalid rows are returned with row-level errors.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(schema = @Schema(type = "string", format = "binary"))))
+    public MemberCsvImportResponse importCsv(@RequestPart("file") MultipartFile file) {
+        if (file.isEmpty()) throw new in.feekeeper.common.exception.BadRequestException("EMPTY_CSV", "Choose a non-empty CSV file");
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase(java.util.Locale.ROOT).endsWith(".csv")) {
+            throw new in.feekeeper.common.exception.BadRequestException("INVALID_CSV_FILE", "Choose a .csv file");
+        }
+        try {
+            return csvImportService.importCsv(file.getBytes());
+        } catch (java.io.IOException ex) {
+            throw new in.feekeeper.common.exception.BadRequestException("INVALID_CSV_FILE", "The CSV file could not be read");
+        }
     }
 
     @GetMapping("/{id}")

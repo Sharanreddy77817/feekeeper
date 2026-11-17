@@ -61,3 +61,22 @@
 - The runtime image uses a Java 21 JRE, container-aware percentage memory limits, a numeric non-root user, and an actuator readiness health check. Local and production Compose definitions receive secrets/configuration only through environment variables; the production database publishes no host port.
 - CI runs Java 21 `mvn clean verify` with Testcontainers, parses every Surefire XML report, and fails if any test is skipped. It uploads test reports regardless of success.
 - OWASP Dependency-Check 13.0.0 was attempted locally on 2026-11-16. It produced no vulnerability report because the NVD rejected the empty API key and the local NVD cache contained no documents; therefore **no clean dependency finding is claimed**. CI requires the `NVD_API_KEY` repository secret, fails when it is absent, uploads the generated reports, and fails for any CVSS 7.0+ finding. The first successful CI report must be reviewed and any findings recorded before launch.
+
+## WhatsApp Cloud API provider
+
+- Added Meta WhatsApp Cloud API as an optional direct provider. This avoids requiring an intermediary/BSP subscription; Meta's message pricing can still apply. The app continues to default to `mock` until the account, credentials, and approved template are configured.
+- Meta's template request mapping uses six ordered body parameters from `ReminderMessageFormatter`: member, business, reminder text, amount, expiry date, and UPI/payment fallback. The business must create and approve a template matching this order before setting `WHATSAPP_PROVIDER=meta`.
+- The Cloud API access token is carried only in the Authorization header from environment configuration; logs do not include it. `WHATSAPP_PHONE_NUMBER_ID` is a separate required environment value for this provider.
+- No Meta credentials or account setup are stored in the repository. Configure the phone number ID, access token, API version URL, approved template name/language in Render after completing Meta onboarding.
+
+## Receipt presentation
+
+- Payment receipts use the tenant's configured business name, owner/contact phone, and UPI ID as the issuer identity. They are laid out as a branded, single-page A5 institute receipt with receipt number/date, member and plan details, payment method, paid amount, and renewed expiry. The currency is labeled INR to retain broad PDF reader compatibility with the existing built-in font.
+- No logo upload or custom font dependency was introduced. Tenant identity is sourced from persisted settings, so the receipt never displays a hard-coded sample institute.
+
+## CSV member import
+
+- Dashboard bulk import uploads multipart CSV to the tenant-authenticated `POST /api/members/import` endpoint. The JWT remains in the Authorization header; tenant identity comes only from the security context.
+- The required header is `fullName,phone,planName,planAmount,planDurationDays,joinDate`. RFC-style quoted fields are supported, including escaped quotes and embedded commas/newlines. Header names are case-insensitive; extra columns are ignored.
+- Imports accept up to 500 data rows and are also bounded by existing multipart/request byte limits. Rows are validated with the same `MemberRequest` Bean Validation rules as single-member creation. Valid rows are batch-saved; invalid, duplicate-in-file, and already-used tenant phone numbers are returned as row-level errors without rejecting other valid rows.
+- Existing phone uniqueness behavior is preserved: a deleted member's phone remains reserved within that tenant. A phone belonging to another tenant does not conflict or become observable.

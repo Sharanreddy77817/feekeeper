@@ -6,7 +6,12 @@
 <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
     <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div><p class="text-sm font-bold uppercase tracking-[.18em] text-indigo-600">Overview</p><h1 class="mt-1 text-3xl font-black tracking-tight">Your fee dashboard</h1><p class="mt-1 text-slate-600">Members, renewals, and collections in one place.</p></div>
-        <button id="add-member" class="focus-ring rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white shadow-sm hover:bg-indigo-700">+ Add member</button>
+        <div class="flex flex-wrap gap-2">
+            <button id="import-members" type="button" class="focus-ring rounded-xl border border-indigo-200 bg-white px-4 py-3 font-bold text-indigo-700 hover:bg-indigo-50">Import CSV</button>
+            <a id="download-csv-template" href="#" class="focus-ring rounded-xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-700 hover:bg-slate-50">CSV template</a>
+            <button id="add-member" class="focus-ring rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white shadow-sm hover:bg-indigo-700">+ Add member</button>
+            <input id="member-csv-file" type="file" accept=".csv,text/csv" class="sr-only" aria-label="Choose member CSV file">
+        </div>
     </header>
 
     <section aria-labelledby="summary-heading">
@@ -25,8 +30,12 @@
 
     <section class="mt-7 rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="members-heading">
         <div class="border-b border-slate-200 p-4 sm:p-5">
+            <div id="csv-import-result" class="mb-4 hidden rounded-xl border border-slate-200 bg-slate-50 p-4" role="status" aria-live="polite">
+                <p id="csv-import-summary" class="font-semibold text-slate-800"></p>
+                <ul id="csv-import-errors" class="mt-2 max-h-40 list-inside list-disc overflow-auto text-sm text-red-700"></ul>
+            </div>
             <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div><h2 id="members-heading" class="text-xl font-black">Members</h2><p class="text-sm text-slate-500">Search, renew, edit, or send a reminder.</p></div>
+                <div><h2 id="members-heading" class="text-xl font-black">Members</h2><p class="text-sm text-slate-500">Search, renew, edit, or send a reminder. CSV imports support up to 500 rows.</p></div>
                 <div class="grid gap-3 sm:grid-cols-[minmax(220px,1fr)_180px]">
                     <div><label for="member-search" class="sr-only">Search members</label><input id="member-search" type="search" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" placeholder="Search name or phone"></div>
                     <div><label for="status-filter" class="sr-only">Filter by status</label><select id="status-filter" class="focus-ring w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5"><option value="">All statuses</option><option value="ACTIVE">Active</option><option value="EXPIRING_SOON">Expiring soon</option><option value="OVERDUE">Overdue</option></select></div>

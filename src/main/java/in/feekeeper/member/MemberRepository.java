@@ -14,6 +14,9 @@ public interface MemberRepository extends JpaRepository<Member, UUID> {
     boolean existsByTenantIdAndPhone(UUID tenantId, String phone);
     boolean existsByTenantIdAndPhoneAndIdNot(UUID tenantId, String phone, UUID id);
 
+    @Query("select m.phone from Member m where m.tenantId = :tenantId and m.phone in :phones")
+    List<String> findPhonesUsedByTenant(@Param("tenantId") UUID tenantId, @Param("phones") Collection<String> phones);
+
     default Page<Member> search(UUID tenantId, String search, MemberStatus status, Pageable pageable) {
         if (search == null && status == null) {
             return findByTenantIdAndDeletedAtIsNull(tenantId, pageable);

@@ -32,7 +32,12 @@ public class NotificationConfiguration {
         ProviderPayloadMapper mapper = switch (provider) {
             case "aisensy" -> new AiSensyPayloadMapper();
             case "interakt" -> new InteraktPayloadMapper();
-            default -> throw new IllegalStateException("WHATSAPP_PROVIDER must be mock, aisensy, or interakt");
+            case "meta" -> {
+                if (properties.phoneNumberId() == null || properties.phoneNumberId().isBlank())
+                    throw new IllegalStateException("WHATSAPP_PHONE_NUMBER_ID is required for provider meta");
+                yield new MetaCloudApiPayloadMapper(formatter);
+            }
+            default -> throw new IllegalStateException("WHATSAPP_PROVIDER must be mock, aisensy, interakt, or meta");
         };
         HttpClient httpClient = HttpClient.newBuilder().connectTimeout(properties.connectTimeout()).build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);

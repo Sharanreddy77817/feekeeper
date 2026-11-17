@@ -9,6 +9,7 @@ import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.List;
@@ -27,6 +28,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     ResponseEntity<ApiProblem> notFound(NotFoundException ex, HttpServletRequest request) {
         return problem(404, "NOT_FOUND", ex.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    ResponseEntity<ApiProblem> noResource(NoResourceFoundException ex, HttpServletRequest request) {
+        return problem(404, "NOT_FOUND", "Resource not found", request, List.of());
     }
 
     @ExceptionHandler(BadRequestException.class)

@@ -1,0 +1,10 @@
+.git
+.github
+.idea
+.vscode
+.m2
+target
+*.log
+.env
+mobile
+docs

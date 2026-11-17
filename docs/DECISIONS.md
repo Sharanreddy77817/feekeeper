@@ -45,3 +45,19 @@
 - All dynamic/user-provided values are assigned through `textContent` or form value properties. The UI does not use `innerHTML`.
 - A payment modal creates one UUID idempotency key when opened, disables submission while in flight, and retains that key for retries until the modal is reopened.
 - The WhatsApp receipt action is a client-generated text receipt link containing receipt number, amount, and new expiry. The PDF remains authenticated and is never exposed through a public URL.
+
+## Phase 5
+
+- Phase 5 contains deployment, security, observability, data-safety, CI, and operational documentation only. No product features or business rules were added.
+- Added Spring Boot Actuator for database-aware health/readiness/liveness and secured metrics. Only health and info are anonymous; metrics still require a valid JWT. Swagger and OpenAPI endpoints are disabled by the production profile.
+- Added `logstash-logback-encoder` solely to emit valid structured JSON logs in production. Request IDs are included from MDC; application logging continues to exclude passwords, JWTs, API keys, request bodies, and full phone numbers.
+- The CSP permits same-origin application assets plus `https://cdn.tailwindcss.com`. Tailwind's runtime CDN requires `'unsafe-eval'` and injected styles require `'unsafe-inline'`; this is a documented compromise of the Phase 4 no-build CDN choice. A future hardening change should compile/self-host Tailwind and remove both allowances.
+- Page framing is denied, MIME sniffing is disabled, referrers use `strict-origin-when-cross-origin`, and HSTS is emitted on HTTPS responses. TLS termination and HTTP-to-HTTPS redirect remain the responsibility of the trusted deployment edge.
+- Missing static/disabled documentation resources now use the existing problem-detail format with `404` instead of falling through to the generic `500` handler; no business endpoint behavior changed.
+- `server.forward-headers-strategy=framework` is enabled for Railway/Render/Lightsail-style reverse proxies. The application must only be reachable through a proxy that replaces untrusted forwarded headers; direct public access would allow header spoofing.
+- Production CORS defaults to no cross-origin origins and must be explicitly set to exact HTTPS origins. Request headers, declared request bodies, form posts, swallowed bodies, and multipart requests have bounded defaults; the trusted edge must apply the same body limit to chunked requests that have no `Content-Length`.
+- Login attempts are logged only as generic success/failure events. Unknown-email and wrong-password paths both execute BCrypt matching against a real or startup-generated dummy hash, reducing timing-based account enumeration without logging the submitted email.
+- Hibernate JDBC timestamp conversion now uses UTC for stored instants. The injected business `Clock` remains `Asia/Kolkata`, so membership dates, monthly revenue, and scheduler boundaries retain the required business timezone.
+- The runtime image uses a Java 21 JRE, container-aware percentage memory limits, a numeric non-root user, and an actuator readiness health check. Local and production Compose definitions receive secrets/configuration only through environment variables; the production database publishes no host port.
+- CI runs Java 21 `mvn clean verify` with Testcontainers, parses every Surefire XML report, and fails if any test is skipped. It uploads test reports regardless of success.
+- OWASP Dependency-Check 13.0.0 was attempted locally on 2026-11-16. It produced no vulnerability report because the NVD rejected the empty API key and the local NVD cache contained no documents; therefore **no clean dependency finding is claimed**. CI requires the `NVD_API_KEY` repository secret, fails when it is absent, uploads the generated reports, and fails for any CVSS 7.0+ finding. The first successful CI report must be reviewed and any findings recorded before launch.

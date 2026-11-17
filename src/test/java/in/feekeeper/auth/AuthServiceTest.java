@@ -22,6 +22,7 @@ class AuthServiceTest {
 
     @BeforeEach void setUp() {
         tenants = mock(TenantRepository.class); users = mock(UserRepository.class); encoder = mock(PasswordEncoder.class);
+        when(encoder.encode("FeeKeeper timing equalization value")).thenReturn("dummy-hash");
         JwtService jwt = new JwtService(new JwtProperties("test-secret-that-is-definitely-32-bytes-long", 60), clock);
         service = new AuthService(tenants, users, encoder, jwt, clock);
         when(tenants.save(any())).thenAnswer(i -> i.getArgument(0));
@@ -60,5 +61,6 @@ class AuthServiceTest {
         when(users.findByEmailIgnoreCase("missing@example.com")).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.login(new LoginRequest("missing@example.com", "wrong")))
                 .isInstanceOf(InvalidCredentialsException.class).hasMessage("Invalid email or password");
+        verify(encoder).matches("wrong", "dummy-hash");
     }
 }

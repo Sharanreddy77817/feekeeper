@@ -6,14 +6,16 @@ FeeKeeper is a multi-tenant fee-management SaaS for small Indian gyms and coachi
 
 - Java 21
 - Maven 3.9+
-- Docker (PostgreSQL and integration tests)
+- Docker Desktop or Docker Engine (PostgreSQL, integration tests, and container builds)
+- PostgreSQL 16 for non-container local development
 
 ## Run locally
 
-1. Copy `.env.example` to `.env` and replace the development values.
-2. Start PostgreSQL: `docker compose up -d db`
-3. Export the variables from `.env` in your shell.
-4. Run: `mvn spring-boot:run -Dspring-boot.run.profiles=dev`
+1. Copy `.env.example` to `.env` and replace `DB_PASSWORD` and `JWT_SECRET`.
+2. Start the complete stack: `docker compose up --build`.
+3. Open `http://localhost:8080/register`.
+
+To run Spring Boot from Maven instead, start only PostgreSQL with `docker compose up -d db`, export the `.env` values into the shell, keep `DB_URL=jdbc:postgresql://localhost:5432/feekeeper`, and run `mvn spring-boot:run -Dspring-boot.run.profiles=dev`.
 
 Open `http://localhost:8080/register` to create the first business, or `/login` for an existing account. The dashboard supports member search and filtering, add/edit/delete, one-click renewal, PDF receipt download/printing, and WhatsApp reminders. Business details and logout are under `/settings`.
 
@@ -21,7 +23,57 @@ The interface uses Tailwind's CDN build, so the browser needs internet access fo
 
 ## Verify
 
-Run `mvn clean verify`. Integration tests use a disposable PostgreSQL Testcontainer and are skipped automatically only when Docker is unavailable.
+Run `mvn clean verify`. Integration tests use disposable PostgreSQL Testcontainers. Locally they are reported as skipped when Docker is unavailable; CI fails if any test is skipped.
+
+Build the production image with `docker build -t feekeeper:local .`. Its health check calls `/actuator/health/readiness`.
+
+## Environment variables
+
+| Variable | Required in production | Purpose / example |
+| --- | --- | --- |
+| `SPRING_PROFILES_ACTIVE` | Yes | Set to `prod`. |
+| `PORT` | Host-dependent | HTTP port; defaults to `8080`. Railway/Render may supply it. |
+| `DB_URL` | Yes | JDBC URL such as `jdbc:postgresql://private-db:5432/feekeeper`. |
+| `DB_USER` / `DB_PASSWORD` | Yes | PostgreSQL credentials with access only to the FeeKeeper database. |
+| `JWT_SECRET` | Yes | Random secret of at least 32 bytes; rotating it signs out existing sessions. |
+| `JWT_EXPIRY_MINUTES` | No | Access-token lifetime; default `60`. |
+| `CORS_ALLOWED_ORIGINS` | Yes | Exact comma-separated HTTPS origins; production default is empty. |
+| `AUTH_RATE_LIMIT_ATTEMPTS` | No | Auth attempts per fixed window; production default `5`. |
+| `AUTH_RATE_LIMIT_WINDOW_MINUTES` | No | Auth rate-limit window; default `1`. |
+| `WHATSAPP_PROVIDER` | No | `mock`, `aisensy`, or `interakt`; keep `mock` until templates are approved. |
+| `WHATSAPP_BASE_URL` / `WHATSAPP_API_KEY` | For REST provider | Provider endpoint and secret API key. |
+| `WHATSAPP_TEMPLATE_NAME` / `WHATSAPP_LANGUAGE_CODE` | For REST provider | Approved template settings. |
+| `WHATSAPP_CONNECT_TIMEOUT` / `WHATSAPP_READ_TIMEOUT` | No | Defaults `3s` / `10s`. |
+| `WHATSAPP_RETRY_ATTEMPTS` / `WHATSAPP_RETRY_BACKOFF` | No | Defaults `3` / `500ms`. |
+| `WHATSAPP_BATCH_SIZE` | No | Scheduler page size; default `100`. |
+| `APP_VERSION` | No | Version shown by `/actuator/info`. |
+| `MAX_HTTP_HEADER_SIZE` | No | Default `16KB`. |
+| `MAX_FORM_POST_SIZE` / `MAX_SWALLOW_SIZE` | No | Tomcat request limits; each defaults to `1MB`. |
+| `MAX_FILE_SIZE` / `MAX_REQUEST_SIZE` | No | Multipart limits; each defaults to `1MB`. |
+| `MAX_REQUEST_BODY_BYTES` | No | Rejects requests with a declared body larger than 1 MiB; the trusted edge should enforce the same limit for chunked requests. |
+
+`COMPOSE_DB_URL`, `PROD_DB_URL`, `POSTGRES_DB`, `DB_PORT`, `APP_PORT`, and `APP_CONTAINER_PORT` are Compose conveniences documented in `.env.example`.
+
+## Production deployment
+
+FeeKeeper can run from the `Dockerfile` on Railway, Render, AWS Lightsail, or another Docker host:
+
+1. Provision private managed PostgreSQL and enable automated backups/PITR. Do not expose port 5432 publicly.
+2. Deploy the repository as a Docker service and set `SPRING_PROFILES_ACTIVE=prod` plus the required variables above. Convert provider URLs to the JDBC form required by `DB_URL` if necessary.
+3. Configure the platform health path as `/actuator/health/readiness`; liveness is `/actuator/health/liveness`.
+4. Attach the custom domain and HTTPS. The trusted edge proxy must replace untrusted forwarded headers.
+5. Set `CORS_ALLOWED_ORIGINS` to the final HTTPS origin. Confirm Swagger is disabled and `/actuator/metrics` returns `401` without a bearer token.
+6. On first startup, Flyway applies migrations automatically. Register the first customer only after readiness reports `UP`.
+
+For a single Docker host, copy `docker-compose.prod.example.yml`, supply environment variables through the host secret manager or protected `.env`, and run `docker compose -f docker-compose.prod.example.yml up -d --build`. The example database is on an internal Docker network and has no published port.
+
+## First-customer onboarding
+
+1. Complete [the launch checklist](docs/LAUNCH_CHECKLIST.md) and a tested backup restore.
+2. Register the customer's real business and owner details over HTTPS; verify phone and UPI ID before sending reminders.
+3. Add a small set of representative plans/members, verify status and expiry calculations, then record a low-value test payment and inspect its receipt.
+4. Keep WhatsApp in mock mode until approved templates and provider credentials are ready. Test the manual `wa.me` fallback with the customer.
+5. Explain corrections, soft deletion, receipt download, logout, support, privacy notice, retention, and deletion-request handling.
 
 ## API
 

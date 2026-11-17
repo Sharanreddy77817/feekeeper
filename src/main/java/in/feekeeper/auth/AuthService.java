@@ -6,22 +6,26 @@ import in.feekeeper.tenant.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.*;
 
 import java.time.Clock;
 import java.util.Locale;
 
 @Service
 public class AuthService {
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final Clock clock;
+    private final String dummyPasswordHash;
 
     public AuthService(TenantRepository tenantRepository, UserRepository userRepository,
                        PasswordEncoder passwordEncoder, JwtService jwtService, Clock clock) {
         this.tenantRepository = tenantRepository; this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder; this.jwtService = jwtService; this.clock = clock;
+        this.dummyPasswordHash = passwordEncoder.encode("FeeKeeper timing equalization value");
     }
 
     @Transactional
@@ -39,9 +43,15 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        AppUser user = userRepository.findByEmailIgnoreCase(normalizeEmail(request.email()))
-                .orElseThrow(InvalidCredentialsException::new);
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) throw new InvalidCredentialsException();
+        var found = userRepository.findByEmailIgnoreCase(normalizeEmail(request.email()));
+        String passwordHash = found.map(AppUser::getPasswordHash).orElse(dummyPasswordHash);
+        boolean passwordMatches = passwordEncoder.matches(request.password(), passwordHash);
+        if (found.isEmpty() || !passwordMatches) {
+            log.warn("Login attempt failed");
+            throw new InvalidCredentialsException();
+        }
+        AppUser user = found.get();
+        log.info("Login attempt succeeded");
         return responseFor(user);
     }
 

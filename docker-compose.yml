@@ -1,12 +1,14 @@
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: feekeeper
-      POSTGRES_USER: ${DB_USER:-feekeeper}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-feekeeper_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-feekeeper}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      TZ: UTC
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -14,5 +16,44 @@ services:
       retries: 10
     volumes:
       - feekeeper-postgres:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      PORT: ${APP_CONTAINER_PORT:-8080}
+      DB_URL: ${COMPOSE_DB_URL:-jdbc:postgresql://db:5432/feekeeper}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_EXPIRY_MINUTES: ${JWT_EXPIRY_MINUTES:-60}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
+      WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-mock}
+      WHATSAPP_BASE_URL: ${WHATSAPP_BASE_URL:-http://localhost:9999}
+      WHATSAPP_API_KEY: ${WHATSAPP_API_KEY:-}
+      WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-fee_reminder}
+      WHATSAPP_LANGUAGE_CODE: ${WHATSAPP_LANGUAGE_CODE:-en}
+      WHATSAPP_CONNECT_TIMEOUT: ${WHATSAPP_CONNECT_TIMEOUT:-3s}
+      WHATSAPP_READ_TIMEOUT: ${WHATSAPP_READ_TIMEOUT:-10s}
+      WHATSAPP_RETRY_ATTEMPTS: ${WHATSAPP_RETRY_ATTEMPTS:-3}
+      WHATSAPP_RETRY_BACKOFF: ${WHATSAPP_RETRY_BACKOFF:-500ms}
+      WHATSAPP_BATCH_SIZE: ${WHATSAPP_BATCH_SIZE:-100}
+      AUTH_RATE_LIMIT_ATTEMPTS: ${AUTH_RATE_LIMIT_ATTEMPTS:-10}
+      AUTH_RATE_LIMIT_WINDOW_MINUTES: ${AUTH_RATE_LIMIT_WINDOW_MINUTES:-1}
+      MAX_HTTP_HEADER_SIZE: ${MAX_HTTP_HEADER_SIZE:-16KB}
+      MAX_FORM_POST_SIZE: ${MAX_FORM_POST_SIZE:-1MB}
+      MAX_SWALLOW_SIZE: ${MAX_SWALLOW_SIZE:-1MB}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-1MB}
+      MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE:-1MB}
+      MAX_REQUEST_BODY_BYTES: ${MAX_REQUEST_BODY_BYTES:-1048576}
+      APP_VERSION: ${APP_VERSION:-development}
+    ports:
+      - "${APP_PORT:-8080}:${APP_CONTAINER_PORT:-8080}"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   feekeeper-postgres:

@@ -22,11 +22,23 @@ class PageSecurityTest {
     @Autowired MockMvc mvc;
     @MockBean JwtService jwtService;
     @MockBean DashboardService dashboardService;
+    @MockBean RequestLimitProperties requestLimitProperties;
 
     @Test void loginPageReturns200() throws Exception { mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("login")); }
     @Test void registerPageReturns200() throws Exception { mvc.perform(get("/register")).andExpect(status().isOk()).andExpect(view().name("register")); }
     @Test void dashboardPageReturns200() throws Exception { mvc.perform(get("/dashboard")).andExpect(status().isOk()).andExpect(view().name("dashboard")); }
     @Test void settingsPageReturns200() throws Exception { mvc.perform(get("/settings")).andExpect(status().isOk()).andExpect(view().name("settings")); }
+
+    @Test
+    void browserResponsesIncludeSecurityHeaders() throws Exception {
+        mvc.perform(get("/login").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Strict-Transport-Security", org.hamcrest.Matchers.containsString("max-age=31536000")))
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().string("X-Frame-Options", "DENY"))
+                .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
+                .andExpect(header().string("Content-Security-Policy", org.hamcrest.Matchers.containsString("frame-ancestors 'none'")));
+    }
 
     @Test
     void protectedApiCallsFailWithoutJwt() throws Exception {

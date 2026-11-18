@@ -1,5 +1,10 @@
+*, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { -webkit-font-smoothing: antialiased; }
+html { width: 100%; min-width: 320px; overflow-x: clip; }
+body { width: 100%; min-width: 320px; margin: 0; overflow-x: clip; -webkit-font-smoothing: antialiased; }
+input, select, textarea, button { max-width: 100%; font: inherit; }
+input, select, textarea { min-width: 0; }
+main, section, form, article { min-width: 0; }
 dialog::backdrop { background: rgba(15, 23, 42, .62); backdrop-filter: blur(2px); }
 dialog[open] { animation: dialog-in .16s ease-out; }
 @keyframes dialog-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
@@ -9,3 +14,14 @@ dialog[open] { animation: dialog-in .16s ease-out; }
 .status-overdue { background: #fee2e2; color: #991b1b; }
 @media (max-width: 767px) { .desktop-only { display: none !important; } }
 @media (min-width: 768px) { .mobile-only { display: none !important; } }
+dialog { max-width: calc(100vw - 1rem); max-height: calc(100dvh - 1rem); }
+dialog[open] { overflow-y: auto; overscroll-behavior: contain; }
+@media (max-width: 480px) {
+    main { padding-left: 1rem; padding-right: 1rem; }
+    #member-dialog, #payment-dialog { width: calc(100vw - 1rem); margin: auto; }
+    #member-dialog form, #payment-dialog > div { padding: 1rem; }
+    #offers-list article { overflow-wrap: anywhere; }
+    #offers-list article > div { min-width: 0; flex-wrap: wrap; }
+    #members-content > div:last-child { gap: .5rem; }
+    #page-label { text-align: center; font-size: .75rem; }
+}

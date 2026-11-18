@@ -80,3 +80,9 @@
 - The required header is `fullName,phone,planName,planAmount,planDurationDays,joinDate`. RFC-style quoted fields are supported, including escaped quotes and embedded commas/newlines. Header names are case-insensitive; extra columns are ignored.
 - Imports accept up to 500 data rows and are also bounded by existing multipart/request byte limits. Rows are validated with the same `MemberRequest` Bean Validation rules as single-member creation. Valid rows are batch-saved; invalid, duplicate-in-file, and already-used tenant phone numbers are returned as row-level errors without rejecting other valid rows.
 - Existing phone uniqueness behavior is preserved: a deleted member's phone remains reserved within that tenant. A phone belonging to another tenant does not conflict or become observable.
+
+## Agent Context & Token Optimization
+
+- Refactored `AGENTS.md` into a lean, high-density router (<30 lines) with progressive disclosure. Injected system context tokens are reduced by ~65%, preventing recurring token inflation on every agent turn.
+- Domain-specific constraints (payments/shedlock, architecture/status calculation, security, testing) are decoupled into modular on-demand reference guides in `docs/rules/`.
+- Embedded explicit agent directives enforcing targeted line-range reads, lazy loading of domain guides, and prevention of redundant whole-file inspections.

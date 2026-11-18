@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
     if (!FeeKeeperApi.requireSession()) return;
 
-    const state = {page: 0, size: 10, totalPages: 0, search: '', status: '', members: new Map(), payment: null, currency: 'INR', currencySymbol: '₹'};
+    const state = {page: 0, size: 10, totalPages: 0, search: '', status: '', members: new Map(), payment: null, currency: 'INR', currencySymbol: '₹', timeZone:'Asia/Kolkata',promotions:[]};
     const memberDialog = document.getElementById('member-dialog');
     const memberForm = document.getElementById('member-form');
     const paymentDialog = document.getElementById('payment-dialog');
@@ -38,8 +38,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('download-receipt').addEventListener('click', function () { receivePdf(false); });
     document.getElementById('print-receipt').addEventListener('click', function () { receivePdf(true); });
     document.getElementById('preview-promotion').addEventListener('click', previewPromotion);
+    document.getElementById('toggle-offer-form').addEventListener('click',toggleOfferForm);
+    document.getElementById('offer-kind').addEventListener('change',updateOfferValueLabel);
+    document.getElementById('offer-form').addEventListener('submit',saveOffer);
+    document.getElementById('retry-offers').addEventListener('click',loadOffers);
 
-    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
+    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';state.timeZone=s.timeZone||'Asia/Kolkata';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
+    loadOffers();
 
     async function loadSummary() {
         show('summary-loading'); hide('summary-cards'); hide('summary-error');
@@ -224,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
         paymentForm.reset(); paymentForm.hidden = false; show('confirm-payment'); hide('payment-success'); hide('payment-error');
         document.getElementById('payment-member-name').textContent = member.fullName + ' · ' + member.planName;
         document.getElementById('payment-amount').value = Number(member.planAmount).toFixed(2);
-        document.getElementById('promotion-code').value=''; document.getElementById('promotion-preview').textContent=''; state.payment.promotionCode=null;
+        populatePaymentOffers(member); document.getElementById('promotion-preview').textContent=''; state.payment.promotionCode=null;
         paymentDialog.showModal(); document.getElementById('payment-amount').focus();
     }
 
@@ -287,7 +292,15 @@ document.addEventListener('DOMContentLoaded', function () {
     function node(tag, classes, text) { const element = document.createElement(tag); if (classes) element.className = classes; if (text !== undefined) element.textContent = text; return element; }
     function formatDate(value) { return new Intl.DateTimeFormat('en-IN', {day: '2-digit', month: 'short', year: 'numeric'}).format(new Date(value + 'T00:00:00')); }
     function money(value) { return state.currencySymbol + new Intl.NumberFormat('en', {minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value || 0)) + ' ' + state.currency; }
-    async function previewPromotion(){const code=document.getElementById('promotion-code').value.trim();const preview=document.getElementById('promotion-preview');if(!code){preview.textContent='Enter a promotion code.';return;}try{const amount=Number(document.getElementById('payment-amount').value);const result=await FeeKeeperApi.request('/api/promotions/validate',{method:'POST',body:{code:code,amount:amount,planDurationDays:state.payment.member.planDurationDays}});state.payment.promotionCode=code;preview.textContent='Discount: '+money(result.calculatedDiscount)+' · Pay '+money(Math.max(0,amount-result.calculatedDiscount));}catch(e){state.payment.promotionCode=null;preview.textContent=e.message;}}
+    async function previewPromotion(){const code=document.getElementById('promotion-code').value;const preview=document.getElementById('promotion-preview');if(!code){state.payment.promotionCode=null;preview.textContent='No offer selected.';return;}try{const amount=Number(document.getElementById('payment-amount').value);const result=await FeeKeeperApi.request('/api/promotions/validate',{method:'POST',body:{code:code,amount:amount,planDurationDays:state.payment.member.planDurationDays}});state.payment.promotionCode=code;preview.textContent='Offer '+result.name+' applied: discount '+money(result.calculatedDiscount)+' · Amount due '+money(Math.max(0,amount-result.calculatedDiscount));}catch(e){state.payment.promotionCode=null;preview.textContent=e.message;}}
+    async function loadOffers(){show('offers-loading');hide('offers-error');hide('offers-empty');try{state.promotions=await FeeKeeperApi.request('/api/promotions');renderOffers();hide('offers-loading');if(!state.promotions.length)show('offers-empty');}catch(e){if(e.status!==401){hide('offers-loading');show('offers-error');}}}
+    function renderOffers(){const list=document.getElementById('offers-list');list.replaceChildren();const today=tenantToday();state.promotions.slice().sort(function(a,b){return a.validFrom.localeCompare(b.validFrom);}).forEach(function(p){const status=today<p.validFrom?'Upcoming':today>p.validTo?'Expired':'Live';const card=node('article','rounded-xl border border-slate-200 bg-white p-4');card.append(node('div','flex items-start justify-between gap-2'),node('p','mt-2 text-sm font-semibold text-indigo-700',p.code),node('p','mt-1 text-sm text-slate-600',p.discountPercent!=null?p.discountPercent+'% off':money(p.flatDiscount)+' off'),node('p','mt-2 text-xs text-slate-500','Valid '+formatDate(p.validFrom)+' – '+formatDate(p.validTo)),node('p','mt-1 text-xs text-slate-500',p.applicablePlanDays?'For '+p.applicablePlanDays+' day plan':'All plan durations'));const header=card.firstChild;header.append(node('h3','font-black text-slate-900',p.name),node('span','rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700',status));list.append(card);});}
+    function populatePaymentOffers(member){const select=document.getElementById('promotion-code');select.replaceChildren();select.append(new Option('No offer',''));const today=tenantToday();state.promotions.filter(function(p){return today>=p.validFrom&&today<=p.validTo&&(!p.applicablePlanDays||p.applicablePlanDays===member.planDurationDays);}).forEach(function(p){select.append(new Option(p.name+' · '+p.code+' · expires '+formatDate(p.validTo),p.code));});}
+    function toggleOfferForm(){const form=document.getElementById('offer-form');form.classList.toggle('hidden');if(!form.classList.contains('hidden')){document.getElementById('offer-from').value=tenantToday();document.getElementById('offer-to').value=plusDays(tenantToday(),30);document.getElementById('offer-name').focus();}}
+    function updateOfferValueLabel(){const label=document.querySelector('label[for="offer-value"]');label.textContent=document.getElementById('offer-kind').value==='percent'?'Discount percentage':'Flat discount amount ('+state.currency+')';}
+    async function saveOffer(event){event.preventDefault();const form=document.getElementById('offer-form'),error=document.getElementById('offer-form-error'),offerName=form.elements.namedItem('name').value.trim(),offerCode=form.elements.namedItem('code').value.trim();error.hidden=true;error.classList.add('hidden');const kind=document.getElementById('offer-kind').value,value=Number(document.getElementById('offer-value').value),from=document.getElementById('offer-from').value,to=document.getElementById('offer-to').value;if(!offerName||!offerCode||!(value>0)||!from||!to||from>to){error.textContent='Enter the offer name, code, a valid discount, and a valid date range.';error.hidden=false;error.classList.remove('hidden');return;}if(kind==='percent'&&value>100){error.textContent='Percentage discount cannot exceed 100%.';error.hidden=false;error.classList.remove('hidden');return;}const payload={name:offerName,code:offerCode.toUpperCase(),discountPercent:kind==='percent'?value:null,flatDiscount:kind==='flat'?value:null,validFrom:from,validTo:to,applicablePlanDays:document.getElementById('offer-days').value?Number(document.getElementById('offer-days').value):null};const button=document.getElementById('save-offer');button.disabled=true;try{await FeeKeeperApi.request('/api/promotions',{method:'POST',body:payload});form.reset();form.classList.add('hidden');FeeKeeperApi.showToast('Offer created.');await loadOffers();}catch(e){error.textContent=e.message;error.hidden=false;error.classList.remove('hidden');}finally{button.disabled=false;}}
+    function tenantToday(){return new Intl.DateTimeFormat('en-CA',{timeZone:state.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+    function plusDays(date,days){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
     function localToday() { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); return now.toISOString().slice(0, 10); }
     function debounce(callback, wait) { let timer; return function (event) { window.clearTimeout(timer); const target = event.target; timer = window.setTimeout(function () { callback({target: target}); }, wait); }; }
     function show(id) { const element = document.getElementById(id); element.classList.remove('hidden'); element.hidden = false; }

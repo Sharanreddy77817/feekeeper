@@ -19,4 +19,7 @@ public class PageController {
 
     @GetMapping("/settings")
     public String settings() { return "settings"; }
+
+    @GetMapping("/about")
+    public String about() { return "about"; }
 }

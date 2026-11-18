@@ -38,7 +38,7 @@ public class SecurityConfig {
                                 "connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'")))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/dashboard", "/settings",
+                        .requestMatchers("/", "/login", "/register", "/dashboard", "/settings", "/about",
                                 "/css/**", "/js/**", "/favicon.ico",
                                 "/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()

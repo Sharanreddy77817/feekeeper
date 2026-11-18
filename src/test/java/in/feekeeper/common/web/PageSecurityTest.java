@@ -28,6 +28,7 @@ class PageSecurityTest {
     @Test void registerPageReturns200() throws Exception { mvc.perform(get("/register")).andExpect(status().isOk()).andExpect(view().name("register")); }
     @Test void dashboardPageReturns200() throws Exception { mvc.perform(get("/dashboard")).andExpect(status().isOk()).andExpect(view().name("dashboard")); }
     @Test void settingsPageReturns200() throws Exception { mvc.perform(get("/settings")).andExpect(status().isOk()).andExpect(view().name("settings")); }
+    @Test void aboutPageReturns200() throws Exception { mvc.perform(get("/about")).andExpect(status().isOk()).andExpect(view().name("about")); }
 
     @Test
     void browserResponsesIncludeSecurityHeaders() throws Exception {

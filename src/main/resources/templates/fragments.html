@@ -12,7 +12,11 @@
 <body>
 <nav th:fragment="nav(active)" class="border-b border-slate-200 bg-white" aria-label="Primary navigation">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-6">
-        <a href="/dashboard" class="flex shrink-0 items-center gap-2 text-base font-black tracking-tight text-slate-900 sm:text-lg">
+        <a href="/about" aria-label="FeeKeeper, powered by Zovak" class="flex shrink-0 items-center gap-2 text-base font-black tracking-tight text-slate-900 sm:hidden">
+            <span class="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white" aria-hidden="true">₹</span>
+            FeeKeeper
+        </a>
+        <a href="/dashboard" aria-label="FeeKeeper dashboard" class="hidden shrink-0 items-center gap-2 text-base font-black tracking-tight text-slate-900 sm:flex sm:text-lg">
             <span class="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white" aria-hidden="true">₹</span>
             FeeKeeper
         </a>

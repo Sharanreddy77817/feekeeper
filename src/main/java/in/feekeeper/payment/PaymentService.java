@@ -4,6 +4,8 @@ import in.feekeeper.common.exception.*;
 import in.feekeeper.member.*;
 import in.feekeeper.payment.dto.*;
 import in.feekeeper.tenant.TenantContext;
+import in.feekeeper.tenant.TenantRepository;
+import in.feekeeper.promotion.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +21,20 @@ public class PaymentService {
     private final ReceiptSequenceRepository sequences;
     private final MemberStatusCalculator statusCalculator;
     private final Clock clock;
+    private final PromotionService promotions;
+    private final TenantRepository tenants;
 
     public PaymentService(PaymentRepository payments, MemberRepository members,
                           ReceiptSequenceRepository sequences, MemberStatusCalculator statusCalculator, Clock clock) {
+        this(payments,members,sequences,statusCalculator,clock,null,null);
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public PaymentService(PaymentRepository payments, MemberRepository members,
+                          ReceiptSequenceRepository sequences, MemberStatusCalculator statusCalculator, Clock clock,
+                          PromotionService promotions, TenantRepository tenants) {
         this.payments = payments; this.members = members; this.sequences = sequences;
         this.statusCalculator = statusCalculator; this.clock = clock;
+        this.promotions=promotions; this.tenants=tenants;
     }
 
     @Transactional
@@ -44,9 +55,20 @@ public class PaymentService {
         LocalDate today = LocalDate.now(clock);
         LocalDate base = member.getExpiryDate().isAfter(today) ? member.getExpiryDate() : today;
         LocalDate newExpiry = base.plusDays(member.getPlanDurationDays());
+        BigDecimal discount=BigDecimal.ZERO;
+        UUID promotionId=null;
+        String currency="INR";
+        if(tenants!=null){var tenant=tenants.findById(tenantId).orElseThrow(()->new NotFoundException("Tenant not found"));currency=tenant.getCurrencyCode();}
+        if(request.promotionCode()!=null&&!request.promotionCode().isBlank()){
+            if(promotions==null) throw new BadRequestException("PROMOTION_UNAVAILABLE","Promotion validation is unavailable");
+            var validation=promotions.validate(new in.feekeeper.promotion.dto.PromotionValidationRequest(request.promotionCode(),amount,member.getPlanDurationDays()));
+            discount=validation.calculatedDiscount(); promotionId=validation.id();
+            amount=amount.subtract(discount).max(BigDecimal.ZERO);
+        }
+        member.recordPromotion(discount,promotionId,clock.instant());
         String receiptNumber = nextReceiptNumber(tenantId, today.getYear());
         Payment payment = new Payment(tenantId, memberId, amount, request.paymentMode(), today,
-                receiptNumber, key, newExpiry, clock.instant());
+                receiptNumber, key, newExpiry, clock.instant(),currency,discount);
         payments.save(payment);
         member.renew(newExpiry, statusCalculator.calculate(newExpiry), clock.instant());
         return PaymentResponse.from(payment);

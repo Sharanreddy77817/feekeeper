@@ -73,7 +73,7 @@ public class ReceiptService {
                     {"Membership valid until", formatDate(payment.getNewExpiryDate())}
             }));
             document.add(Chunk.NEWLINE);
-            document.add(amountPanel(payment));
+            document.add(amountPanel(tenant, payment));
             document.add(Chunk.NEWLINE);
             document.add(footer(tenant));
             document.close();
@@ -148,10 +148,10 @@ public class ReceiptService {
         return table;
     }
 
-    private PdfPTable amountPanel(Payment payment) throws DocumentException {
+    private PdfPTable amountPanel(Tenant tenant, Payment payment) throws DocumentException {
         PdfPTable panel = new PdfPTable(new float[]{1f, 1f});
         panel.setWidthPercentage(100);
-        PdfPCell amount = cell("AMOUNT PAID\nINR " + payment.getAmountPaid().setScale(2, RoundingMode.HALF_UP).toPlainString(),
+        PdfPCell amount = cell("AMOUNT PAID\n" + tenant.getCurrencySymbol() + " " + tenant.getCurrencyCode() + " " + payment.getAmountPaid().setScale(2, RoundingMode.HALF_UP).toPlainString(),
                 font(14, Font.BOLD, Color.WHITE), BRAND, 12, 12, 12, 12);
         amount.setBorder(Rectangle.NO_BORDER);
         amount.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -163,6 +163,7 @@ public class ReceiptService {
         panel.addCell(status);
         return panel;
     }
+
 
     private PdfPTable footer(Tenant tenant) throws DocumentException {
         PdfPTable table = new PdfPTable(1);

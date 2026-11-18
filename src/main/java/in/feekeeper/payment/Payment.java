@@ -24,6 +24,8 @@ public class Payment {
     @Column(name = "idempotency_key", length = 100) private String idempotencyKey;
     @Column(name = "new_expiry_date") private LocalDate newExpiryDate;
     @Column(name = "created_at", nullable = false) private Instant createdAt;
+    @Column(name = "currency_code", nullable = false, length = 3) private String currencyCode = "INR";
+    @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2) private BigDecimal discountAmount = BigDecimal.ZERO;
 
     public Payment(UUID tenantId, UUID memberId, BigDecimal amountPaid, PaymentMode paymentMode,
                    LocalDate paymentDate, String receiptNumber, String idempotencyKey,
@@ -38,5 +40,13 @@ public class Payment {
         this.idempotencyKey = idempotencyKey;
         this.newExpiryDate = newExpiryDate;
         this.createdAt = createdAt;
+    }
+
+    public Payment(UUID tenantId, UUID memberId, BigDecimal amountPaid, PaymentMode paymentMode,
+                   LocalDate paymentDate, String receiptNumber, String idempotencyKey,
+                   LocalDate newExpiryDate, Instant createdAt, String currencyCode, BigDecimal discountAmount) {
+        this(tenantId, memberId, amountPaid, paymentMode, paymentDate, receiptNumber, idempotencyKey, newExpiryDate, createdAt);
+        this.currencyCode = currencyCode;
+        this.discountAmount = discountAmount;
     }
 }

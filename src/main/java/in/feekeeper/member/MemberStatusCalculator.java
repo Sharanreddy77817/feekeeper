@@ -11,7 +11,10 @@ public class MemberStatusCalculator {
     public MemberStatusCalculator(Clock clock) { this.clock = clock; }
 
     public MemberStatus calculate(LocalDate expiryDate) {
-        LocalDate today = LocalDate.now(clock);
+        return calculate(expiryDate,LocalDate.now(clock));
+    }
+
+    public MemberStatus calculate(LocalDate expiryDate,LocalDate today) {
         if (expiryDate.isBefore(today)) return MemberStatus.OVERDUE;
         if (!expiryDate.isAfter(today.plusDays(5))) return MemberStatus.EXPIRING_SOON;
         return MemberStatus.ACTIVE;

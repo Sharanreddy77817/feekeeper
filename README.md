@@ -143,3 +143,6 @@ The tenant-scoped `whatsapp-link` endpoint is a free manual fallback. It returns
 - Shared API behavior lives in `static/js/api.js`, including bearer headers, problem-detail parsing, session expiry, field errors, and authenticated blob downloads.
 - Dynamic member and error content is rendered with `textContent`; user-controlled HTML is never injected.
 - See [docs/MANUAL_TESTS.md](docs/MANUAL_TESTS.md) for the full mobile, payment, receipt, settings, logout, and cross-tenant checklist.
+# International billing and promotions
+
+Tenant settings support INR, USD, EUR, GBP, and AED with a selectable business time zone. Create tenant-scoped offers through `POST /api/promotions`, view currently active offers through `GET /api/promotions`, and check a code with `POST /api/promotions/validate` using `code`, `amount`, and `planDurationDays`. Mark-paid requests may include `promotionCode`; the discounted amount and applied discount are stored with the payment. Annual plans use 365 days; custom plan lengths from 1 through 3650 days are accepted by the API.

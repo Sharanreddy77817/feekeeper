@@ -86,3 +86,9 @@
 - Refactored `AGENTS.md` into a lean, high-density router (<30 lines) with progressive disclosure. Injected system context tokens are reduced by ~65%, preventing recurring token inflation on every agent turn.
 - Domain-specific constraints (payments/shedlock, architecture/status calculation, security, testing) are decoupled into modular on-demand reference guides in `docs/rules/`.
 - Embedded explicit agent directives enforcing targeted line-range reads, lazy loading of domain guides, and prevention of redundant whole-file inspections.
+# International billing and promotion behavior
+
+- V6 introduces tenant currency/time zone settings, tenant-scoped promotion codes, and recorded payment discounts. Existing tenants and payment history migrate with INR defaults.
+- A promotion must use exactly one discount form (percentage or flat amount); discounts are capped at the fee amount. A supplied promotion must be active, within its inclusive date window, and match any plan duration restriction. Unknown codes return 404 within the authenticated tenant scope.
+- API plans accept 1–3650 days to support annual and custom cycles. The UI offers the common 30/90/180/365 day choices.
+- Reminder dates and status calculation use each tenant's configured time zone. Payment business dates continue using the injected application clock.

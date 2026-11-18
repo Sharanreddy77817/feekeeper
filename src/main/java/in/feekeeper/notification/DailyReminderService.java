@@ -26,14 +26,13 @@ public class DailyReminderService {
     }
 
     public void run() {
-        LocalDate today = LocalDate.now(clock);
         updateStatuses();
         UUID afterId = null;
         int pageSize = Math.max(1, properties.batchSize());
         while (true) {
             List<ReminderCandidate> page = members.findPageAfter(afterId, pageSize);
             if (page.isEmpty()) return;
-            for (ReminderCandidate candidate : page) process(candidate, today);
+            for (ReminderCandidate candidate : page) process(candidate, LocalDate.now(clock.withZone(ZoneId.of(candidate.timeZone()))));
             afterId = page.getLast().memberId();
             if (page.size() < pageSize) return;
         }
@@ -46,7 +45,7 @@ public class DailyReminderService {
             List<MemberStatusCandidate> page = members.findStatusPageAfter(afterId, pageSize);
             if (page.isEmpty()) return;
             for (MemberStatusCandidate candidate : page) {
-                MemberStatus calculated = statusCalculator.calculate(candidate.expiryDate());
+                MemberStatus calculated = statusCalculator.calculate(candidate.expiryDate(),LocalDate.now(clock.withZone(ZoneId.of(candidate.timeZone()))));
                 if (calculated != candidate.currentStatus())
                     members.updateStatus(candidate.memberId(), calculated, clock.instant());
             }

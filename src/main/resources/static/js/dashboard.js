@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
     if (!FeeKeeperApi.requireSession()) return;
 
-    const state = {page: 0, size: 10, totalPages: 0, search: '', status: '', members: new Map(), payment: null};
+    const state = {page: 0, size: 10, totalPages: 0, search: '', status: '', members: new Map(), payment: null, currency: 'INR', currencySymbol: '₹'};
     const memberDialog = document.getElementById('member-dialog');
     const memberForm = document.getElementById('member-form');
     const paymentDialog = document.getElementById('payment-dialog');
@@ -37,9 +37,9 @@ document.addEventListener('DOMContentLoaded', function () {
     paymentForm.addEventListener('submit', markPaid);
     document.getElementById('download-receipt').addEventListener('click', function () { receivePdf(false); });
     document.getElementById('print-receipt').addEventListener('click', function () { receivePdf(true); });
+    document.getElementById('preview-promotion').addEventListener('click', previewPromotion);
 
-    loadSummary();
-    loadMembers();
+    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
 
     async function loadSummary() {
         show('summary-loading'); hide('summary-cards'); hide('summary-error');
@@ -224,6 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
         paymentForm.reset(); paymentForm.hidden = false; show('confirm-payment'); hide('payment-success'); hide('payment-error');
         document.getElementById('payment-member-name').textContent = member.fullName + ' · ' + member.planName;
         document.getElementById('payment-amount').value = Number(member.planAmount).toFixed(2);
+        document.getElementById('promotion-code').value=''; document.getElementById('promotion-preview').textContent=''; state.payment.promotionCode=null;
         paymentDialog.showModal(); document.getElementById('payment-amount').focus();
     }
 
@@ -234,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const mode = paymentForm.querySelector('[name="paymentMode"]:checked').value;
         const button = document.getElementById('confirm-payment'); button.disabled = true; button.textContent = 'Recording payment…';
         try {
-            const result = await FeeKeeperApi.request('/api/payments/mark-paid/' + state.payment.member.id, {method: 'POST', headers: {'Idempotency-Key': state.payment.idempotencyKey}, body: {amountPaid: amount, paymentMode: mode}});
+            const result = await FeeKeeperApi.request('/api/payments/mark-paid/' + state.payment.member.id, {method: 'POST', headers: {'Idempotency-Key': state.payment.idempotencyKey}, body: {amountPaid: amount, paymentMode: mode, promotionCode: state.payment.promotionCode||null}});
             state.payment.result = result; state.payment.member.expiryDate = result.newExpiryDate; state.payment.member.status = 'ACTIVE';
             renderMembers(Array.from(state.members.values())); loadSummary();
             paymentForm.hidden = true; show('payment-success');
@@ -275,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!/^(?:\+91)?[6-9]\d{9}$/.test(value.phone)) return ['phone', 'Enter a valid Indian mobile number.'];
         if (!value.planName) return ['planName', 'Plan name is required.'];
         if (!(value.planAmount > 0)) return ['planAmount', 'Amount must be greater than zero.'];
-        if (![30, 90, 180].includes(value.planDurationDays)) return ['planDurationDays', 'Choose 30, 90, or 180 days.'];
+        if (![30, 90, 180, 365].includes(value.planDurationDays)) return ['planDurationDays', 'Choose 30, 90, 180, or 365 days.'];
         if (!value.joinDate) return ['joinDate', 'Join date is required.'];
         return null;
     }
@@ -285,7 +286,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function detail(label, value) { const wrap = node('div'); wrap.append(node('dt', 'text-xs uppercase tracking-wide text-slate-500', label), node('dd', 'mt-0.5 font-semibold', value)); return wrap; }
     function node(tag, classes, text) { const element = document.createElement(tag); if (classes) element.className = classes; if (text !== undefined) element.textContent = text; return element; }
     function formatDate(value) { return new Intl.DateTimeFormat('en-IN', {day: '2-digit', month: 'short', year: 'numeric'}).format(new Date(value + 'T00:00:00')); }
-    function money(value) { return new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR'}).format(Number(value || 0)); }
+    function money(value) { return state.currencySymbol + new Intl.NumberFormat('en', {minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value || 0)) + ' ' + state.currency; }
+    async function previewPromotion(){const code=document.getElementById('promotion-code').value.trim();const preview=document.getElementById('promotion-preview');if(!code){preview.textContent='Enter a promotion code.';return;}try{const amount=Number(document.getElementById('payment-amount').value);const result=await FeeKeeperApi.request('/api/promotions/validate',{method:'POST',body:{code:code,amount:amount,planDurationDays:state.payment.member.planDurationDays}});state.payment.promotionCode=code;preview.textContent='Discount: '+money(result.calculatedDiscount)+' · Pay '+money(Math.max(0,amount-result.calculatedDiscount));}catch(e){state.payment.promotionCode=null;preview.textContent=e.message;}}
     function localToday() { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); return now.toISOString().slice(0, 10); }
     function debounce(callback, wait) { let timer; return function (event) { window.clearTimeout(timer); const target = event.target; timer = window.setTimeout(function () { callback({target: target}); }, wait); }; }
     function show(id) { const element = document.getElementById(id); element.classList.remove('hidden'); element.hidden = false; }

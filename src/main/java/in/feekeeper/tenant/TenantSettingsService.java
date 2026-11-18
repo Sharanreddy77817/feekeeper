@@ -18,7 +18,10 @@ public class TenantSettingsService {
     public TenantSettingsResponse update(TenantSettingsRequest request) {
         Tenant tenant = currentTenant();
         tenant.updateSettings(request.businessName().trim(), request.ownerName().trim(),
-                normalizePhone(request.phone()), normalizeUpi(request.upiId()));
+                normalizePhone(request.phone()), normalizeUpi(request.upiId()),
+                request.currencyCode()==null?tenant.getCurrencyCode():request.currencyCode(),
+                request.currencySymbol()==null?symbol(request.currencyCode(),tenant.getCurrencySymbol()):request.currencySymbol(),
+                validZone(request.timeZone(),tenant.getTimeZone()));
         return TenantSettingsResponse.from(tenant);
     }
 
@@ -35,4 +38,6 @@ public class TenantSettingsService {
     private String normalizeUpi(String upiId) {
         return upiId == null || upiId.isBlank() ? null : upiId.trim().toLowerCase();
     }
+    private String symbol(String code,String fallback){if(code==null)return fallback;return switch(code){case "USD"->"$";case "EUR"->"€";case "GBP"->"£";case "AED"->"د.إ";case "INR"->"₹";default->fallback;};}
+    private String validZone(String zone,String fallback){if(zone==null||zone.isBlank())return fallback;try{java.time.ZoneId.of(zone);return zone;}catch(java.time.DateTimeException ex){throw new in.feekeeper.common.exception.BadRequestException("INVALID_TIME_ZONE","Invalid time zone");}}
 }

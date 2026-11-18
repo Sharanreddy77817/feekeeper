@@ -28,6 +28,8 @@ public class Member {
     @Column(name = "deleted_at") private Instant deletedAt;
     @Column(name = "created_at", nullable = false) private Instant createdAt;
     @Column(name = "updated_at", nullable = false) private Instant updatedAt;
+    @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2) private BigDecimal discountAmount = BigDecimal.ZERO;
+    @Column(name = "applied_promotion_id") private UUID appliedPromotionId;
 
     public Member(UUID tenantId, String fullName, String phone, String planName, BigDecimal planAmount,
                   int planDurationDays, LocalDate joinDate, LocalDate expiryDate, MemberStatus status, Instant now) {
@@ -61,4 +63,5 @@ public class Member {
         this.status = status;
         this.updatedAt = now;
     }
+    public void recordPromotion(BigDecimal discount,UUID promotionId,Instant now){this.discountAmount=discount;this.appliedPromotionId=promotionId;this.updatedAt=now;}
 }

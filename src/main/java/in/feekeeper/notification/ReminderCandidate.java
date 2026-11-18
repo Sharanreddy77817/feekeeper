@@ -14,5 +14,8 @@ public record ReminderCandidate(
         LocalDate lastReminderSentDate,
         Instant deletedAt,
         String businessName,
-        String upiId
-) { }
+        String upiId,
+        String timeZone
+) {
+    public ReminderCandidate(UUID memberId,UUID tenantId,String phone,String memberName,BigDecimal planAmount,LocalDate expiryDate,LocalDate lastReminderSentDate,Instant deletedAt,String businessName,String upiId){this(memberId,tenantId,phone,memberName,planAmount,expiryDate,lastReminderSentDate,deletedAt,businessName,upiId,"Asia/Kolkata");}
+}

@@ -15,15 +15,14 @@ class JdbcSystemMemberRepository implements SystemMemberRepository {
 
     @Override
     public List<MemberStatusCandidate> findStatusPageAfter(UUID afterId, int limit) {
-        String afterPredicate = afterId == null ? "" : "and id > :afterId";
         var statement = jdbc.sql("""
-                select id, expiry_date, status from members
-                 where deleted_at is null %s
-                 order by id limit :limit
-                """.formatted(afterPredicate)).param("limit", limit);
+                select m.id, m.expiry_date, m.status, t.time_zone from members m
+                 join tenants t on t.id=m.tenant_id where m.deleted_at is null %s
+                 order by m.id limit :limit
+                """.formatted(afterId == null ? "" : "and m.id > :afterId")).param("limit", limit);
         if (afterId != null) statement = statement.param("afterId", afterId);
         return statement.query((rs, rowNum) -> new MemberStatusCandidate(rs.getObject("id", UUID.class),
-                rs.getObject("expiry_date", LocalDate.class), MemberStatus.valueOf(rs.getString("status")))).list();
+                rs.getObject("expiry_date", LocalDate.class), MemberStatus.valueOf(rs.getString("status")),rs.getString("time_zone"))).list();
     }
 
     @Override
@@ -37,7 +36,7 @@ class JdbcSystemMemberRepository implements SystemMemberRepository {
         String afterPredicate = afterId == null ? "" : "where m.id > :afterId";
         var statement = jdbc.sql("""
                 select m.id, m.tenant_id, m.phone, m.full_name, m.plan_amount, m.expiry_date,
-                       m.last_reminder_sent_date, m.deleted_at, t.business_name, t.upi_id
+                       m.last_reminder_sent_date, m.deleted_at, t.business_name, t.upi_id, t.time_zone
                   from members m
                   join tenants t on t.id = m.tenant_id
                  %s
@@ -52,7 +51,7 @@ class JdbcSystemMemberRepository implements SystemMemberRepository {
                         rs.getObject("last_reminder_sent_date", LocalDate.class),
                         rs.getTimestamp("deleted_at") == null ? null : rs.getTimestamp("deleted_at").toInstant(),
                         rs.getString("business_name"),
-                        rs.getString("upi_id"))).list();
+                        rs.getString("upi_id"), rs.getString("time_zone"))).list();
     }
 
     @Override

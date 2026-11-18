@@ -46,6 +46,17 @@ class Phase2TenantIsolationIntegrationTest {
     @Autowired AuthService authService;
 
     @Test
+    void promotionCodesAreIsolatedByTenant() throws Exception {
+        AuthResponse tenantA=register("Promo Tenant A"); AuthResponse tenantB=register("Promo Tenant B");
+        String tokenA=bearer(tenantA), tokenB=bearer(tenantB); String code="BONLY"+UUID.randomUUID().toString().substring(0,8);
+        String promo="{\"code\":\"%s\",\"name\":\"Private offer\",\"discountPercent\":10.00,\"validFrom\":\"%s\",\"validTo\":\"%s\"}".formatted(code,LocalDate.now().minusDays(1),LocalDate.now().plusDays(5));
+        mvc.perform(post("/api/promotions").header("Authorization",tokenB).contentType(MediaType.APPLICATION_JSON).content(promo)).andExpect(status().isOk());
+        mvc.perform(get("/api/promotions").header("Authorization",tokenA)).andExpect(status().isOk()).andExpect(jsonPath("$",org.hamcrest.Matchers.hasSize(0)));
+        mvc.perform(post("/api/promotions/validate").header("Authorization",tokenA).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"code\":\"%s\",\"amount\":100.00,\"planDurationDays\":365}".formatted(code))).andExpect(status().isNotFound());
+    }
+
+    @Test
     void everyPhaseTwoEndpointKeepsTenantDataIsolated() throws Exception {
         AuthResponse tenantA = register("A Gym");
         AuthResponse tenantB = register("B Gym");

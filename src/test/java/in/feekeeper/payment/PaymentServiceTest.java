@@ -46,7 +46,7 @@ class PaymentServiceTest {
     @AfterEach void clearContext() { SecurityContextHolder.clearContext(); }
 
     @ParameterizedTest
-    @ValueSource(ints = {30, 90, 180})
+    @ValueSource(ints = {30, 90, 180, 365})
     void extendsExpiredMemberBySupportedPlanDuration(int duration) {
         Member member = member(duration, TODAY.minusDays(3));
         when(members.findForUpdate(member.getId(), TENANT_ID)).thenReturn(Optional.of(member));

@@ -1,6 +1,37 @@
 (function () {
     'use strict';
     const TOKEN_KEY = 'feekeeper.jwt';
+    const THEME_KEY = 'feekeeper.theme';
+
+    function setupTheme() {
+        const saved = localStorage.getItem(THEME_KEY);
+        const initialTheme = saved || (document.body.classList.contains('bg-slate-900') ? 'dark' : 'light');
+        document.documentElement.dataset.theme = initialTheme;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.id = 'theme-toggle';
+        button.className = 'theme-toggle focus-ring';
+        button.setAttribute('aria-pressed', String(initialTheme === 'dark'));
+        button.addEventListener('click', function () {
+            const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.dataset.theme = nextTheme;
+            localStorage.setItem(THEME_KEY, nextTheme);
+            button.setAttribute('aria-pressed', String(nextTheme === 'dark'));
+            updateThemeButton(button, nextTheme);
+        });
+        updateThemeButton(button, initialTheme);
+        document.body.appendChild(button);
+    }
+
+    function updateThemeButton(button, theme) {
+        button.textContent = theme === 'dark' ? '☀ Light mode' : '☾ Dark mode';
+        button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        button.title = button.getAttribute('aria-label');
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setupTheme, {once: true});
+    else setupTheme();
 
     class ApiError extends Error {
         constructor(problem, status) {

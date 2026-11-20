@@ -4,7 +4,8 @@
     const THEME_KEY = 'feekeeper.theme';
 
     function setupTheme() {
-        const saved = localStorage.getItem(THEME_KEY);
+        let saved = null;
+        try { saved = localStorage.getItem(THEME_KEY); } catch (ignored) { /* Use this page's default theme when storage is unavailable. */ }
         const initialTheme = saved || (document.body.classList.contains('bg-slate-900') ? 'dark' : 'light');
         document.documentElement.dataset.theme = initialTheme;
 
@@ -12,20 +13,30 @@
         button.type = 'button';
         button.id = 'theme-toggle';
         button.className = 'theme-toggle focus-ring';
+        const navigation = document.querySelector('nav > div');
+        const publicActions = document.querySelector('header > div > div:last-child');
+        if (navigation) {
+            button.classList.add('theme-toggle-inline');
+            navigation.appendChild(button);
+        }
+        else if (publicActions) {
+            button.classList.add('theme-toggle-inline');
+            publicActions.appendChild(button);
+        } else button.classList.add('theme-toggle-corner');
         button.setAttribute('aria-pressed', String(initialTheme === 'dark'));
         button.addEventListener('click', function () {
             const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
             document.documentElement.dataset.theme = nextTheme;
-            localStorage.setItem(THEME_KEY, nextTheme);
+            try { localStorage.setItem(THEME_KEY, nextTheme); } catch (ignored) { /* Theme remains active for this page. */ }
             button.setAttribute('aria-pressed', String(nextTheme === 'dark'));
             updateThemeButton(button, nextTheme);
         });
         updateThemeButton(button, initialTheme);
-        document.body.appendChild(button);
+        if (!navigation && !publicActions) document.body.appendChild(button);
     }
 
     function updateThemeButton(button, theme) {
-        button.textContent = theme === 'dark' ? '☀ Light mode' : '☾ Dark mode';
+        button.textContent = theme === 'dark' ? '☀' : '☾';
         button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
         button.title = button.getAttribute('aria-label');
     }

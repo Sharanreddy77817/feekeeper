@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const mobile = document.getElementById('members-mobile');
         table.replaceChildren(); mobile.replaceChildren();
         members.forEach(function (member) {
-            const row = node('tr', 'hover:bg-slate-50');
+            const row = node('tr', 'member-row hover:bg-slate-50');
             const identity = node('td', 'px-5 py-4');
             identity.append(node('p', 'font-bold text-slate-900', member.fullName), node('p', 'mt-0.5 text-xs text-slate-500', member.phone));
             const plan = node('td', 'px-5 py-4'); plan.append(node('p', 'font-semibold', member.planName), node('p', 'text-xs text-slate-500', money(member.planAmount) + ' · ' + member.planDurationDays + ' days'));
@@ -94,17 +94,17 @@ document.addEventListener('DOMContentLoaded', function () {
             const status = node('td', 'px-5 py-4'); status.append(statusBadge(member.status));
             const actions = node('td', 'px-5 py-4');
             const actionWrap = node('div', 'flex justify-end gap-2');
-            actionWrap.append(actionButton('pay', member.id, 'Mark paid', 'bg-indigo-600 text-white'), actionButton('whatsapp', member.id, 'WhatsApp', 'border border-slate-300'), actionButton('edit', member.id, 'Edit', 'border border-slate-300'), actionButton('delete', member.id, 'Delete', 'text-red-700'));
+            actionWrap.append(actionButton('pay', member.id, 'Mark paid', 'bg-indigo-600 text-white'), actionButton('whatsapp', member.id, 'WhatsApp', 'border border-slate-300 bg-white text-slate-700'), actionButton('edit', member.id, 'Edit', 'border border-slate-300 bg-white text-slate-700'), actionButton('delete', member.id, 'Delete', 'border border-red-200 bg-white text-red-700'));
             actions.append(actionWrap); row.append(identity, plan, expiry, status, actions); table.append(row);
 
-            const card = node('article', 'p-4');
+            const card = node('article', 'member-card p-4');
             const top = node('div', 'flex items-start justify-between gap-3');
             const name = node('div'); name.append(node('h3', 'font-black', member.fullName), node('p', 'text-sm text-slate-500', member.phone));
             top.append(name, statusBadge(member.status));
             const details = node('dl', 'mt-4 grid grid-cols-2 gap-3 text-sm');
             details.append(detail('Plan', member.planName), detail('Amount', money(member.planAmount)), detail('Expiry', formatDate(member.expiryDate)), detail('Duration', member.planDurationDays + ' days'));
             const cardActions = node('div', 'mt-4 grid grid-cols-2 gap-2');
-            cardActions.append(actionButton('pay', member.id, 'Mark paid', 'bg-indigo-600 text-white'), actionButton('whatsapp', member.id, 'WhatsApp', 'border border-slate-300'), actionButton('edit', member.id, 'Edit', 'border border-slate-300'), actionButton('delete', member.id, 'Delete', 'text-red-700'));
+            cardActions.append(actionButton('pay', member.id, 'Mark paid', 'bg-indigo-600 text-white'), actionButton('whatsapp', member.id, 'WhatsApp', 'border border-slate-300 bg-white text-slate-700'), actionButton('edit', member.id, 'Edit', 'border border-slate-300 bg-white text-slate-700'), actionButton('delete', member.id, 'Delete', 'border border-red-200 bg-white text-red-700'));
             card.append(top, details, cardActions); mobile.append(card);
         });
     }
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
     function localFieldError(form, name, text) { const message = form.querySelector('[data-error-for="' + name + '"]'); message.textContent = text; message.hidden = false; message.classList.remove('hidden'); form.elements.namedItem(name).focus(); }
-    function actionButton(action, id, label, classes) { const button = node('button', 'focus-ring rounded-lg px-3 py-2 text-xs font-bold ' + classes, label); button.type = 'button'; button.dataset.action = action; button.dataset.id = id; return button; }
+    function actionButton(action, id, label, classes) { const button = node('button', 'action-button focus-ring rounded-lg px-3 py-2 text-xs font-bold ' + classes, label); button.type = 'button'; button.dataset.action = action; button.dataset.id = id; return button; }
     function statusBadge(status) { const labels = {ACTIVE: 'Active', EXPIRING_SOON: 'Expiring soon', OVERDUE: 'Overdue'}; return node('span', 'inline-flex rounded-full px-2.5 py-1 text-xs font-bold status-' + status.toLowerCase().replace('_', '-'), labels[status]); }
     function detail(label, value) { const wrap = node('div'); wrap.append(node('dt', 'text-xs uppercase tracking-wide text-slate-500', label), node('dd', 'mt-0.5 font-semibold', value)); return wrap; }
     function node(tag, classes, text) { const element = document.createElement(tag); if (classes) element.className = classes; if (text !== undefined) element.textContent = text; return element; }
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function money(value) { return state.currencySymbol + new Intl.NumberFormat('en', {minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value || 0)) + ' ' + state.currency; }
     async function previewPromotion(){const code=document.getElementById('promotion-code').value;const preview=document.getElementById('promotion-preview');if(!code){state.payment.promotionCode=null;preview.textContent='No offer selected.';return;}try{const amount=Number(document.getElementById('payment-amount').value);const result=await FeeKeeperApi.request('/api/promotions/validate',{method:'POST',body:{code:code,amount:amount,planDurationDays:state.payment.member.planDurationDays}});state.payment.promotionCode=code;preview.textContent='Offer '+result.name+' applied: discount '+money(result.calculatedDiscount)+' · Amount due '+money(Math.max(0,amount-result.calculatedDiscount));}catch(e){state.payment.promotionCode=null;preview.textContent=e.message;}}
     async function loadOffers(){show('offers-loading');hide('offers-error');hide('offers-empty');try{state.promotions=await FeeKeeperApi.request('/api/promotions');renderOffers();hide('offers-loading');if(!state.promotions.length)show('offers-empty');}catch(e){if(e.status!==401){hide('offers-loading');show('offers-error');}}}
-    function renderOffers(){const list=document.getElementById('offers-list');list.replaceChildren();const today=tenantToday();state.promotions.slice().sort(function(a,b){return a.validFrom.localeCompare(b.validFrom);}).forEach(function(p){const status=today<p.validFrom?'Upcoming':today>p.validTo?'Expired':'Live';const card=node('article','rounded-xl border border-slate-200 bg-white p-4');card.append(node('div','flex items-start justify-between gap-2'),node('p','mt-2 text-sm font-semibold text-indigo-700',p.code),node('p','mt-1 text-sm text-slate-600',p.discountPercent!=null?p.discountPercent+'% off':money(p.flatDiscount)+' off'),node('p','mt-2 text-xs text-slate-500','Valid '+formatDate(p.validFrom)+' – '+formatDate(p.validTo)),node('p','mt-1 text-xs text-slate-500',p.applicablePlanDays?'For '+p.applicablePlanDays+' day plan':'All plan durations'));const header=card.firstChild;header.append(node('h3','font-black text-slate-900',p.name),node('span','rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700',status));list.append(card);});}
+    function renderOffers(){const list=document.getElementById('offers-list');list.replaceChildren();const today=tenantToday();state.promotions.slice().sort(function(a,b){return a.validFrom.localeCompare(b.validFrom);}).forEach(function(p){const status=today<p.validFrom?'Upcoming':today>p.validTo?'Expired':'Live';const card=node('article','offer-card rounded-xl border border-slate-200 bg-white p-4');card.append(node('div','flex items-start justify-between gap-2'),node('p','mt-2 text-sm font-semibold text-indigo-700',p.code),node('p','mt-1 text-sm text-slate-600',p.discountPercent!=null?p.discountPercent+'% off':money(p.flatDiscount)+' off'),node('p','mt-2 text-xs text-slate-500','Valid '+formatDate(p.validFrom)+' – '+formatDate(p.validTo)),node('p','mt-1 text-xs text-slate-500',p.applicablePlanDays?'For '+p.applicablePlanDays+' day plan':'All plan durations'));const header=card.firstChild;header.append(node('h3','font-black text-slate-900',p.name),node('span','rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700',status));list.append(card);});}
     function populatePaymentOffers(member){const select=document.getElementById('promotion-code');select.replaceChildren();select.append(new Option('No offer',''));const today=tenantToday();state.promotions.filter(function(p){return today>=p.validFrom&&today<=p.validTo&&(!p.applicablePlanDays||p.applicablePlanDays===member.planDurationDays);}).forEach(function(p){select.append(new Option(p.name+' · '+p.code+' · expires '+formatDate(p.validTo),p.code));});}
     function toggleOfferForm(){const form=document.getElementById('offer-form');form.classList.toggle('hidden');if(!form.classList.contains('hidden')){document.getElementById('offer-from').value=tenantToday();document.getElementById('offer-to').value=plusDays(tenantToday(),30);document.getElementById('offer-name').focus();}}
     function updateOfferValueLabel(){const label=document.querySelector('label[for="offer-value"]');label.textContent=document.getElementById('offer-kind').value==='percent'?'Discount percentage':'Flat discount amount ('+state.currency+')';}

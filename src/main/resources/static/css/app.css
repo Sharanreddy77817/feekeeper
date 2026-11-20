@@ -30,6 +30,25 @@
 [data-theme="dark"] dialog { background-color: #111c2e; color: #e2e8f0; }
 [data-theme="dark"] .theme-toggle { background: #1e293b; border-color: #475569; color: #f8fafc; }
 [data-theme="dark"] .theme-toggle:hover { background: #334155; }
+[data-theme="dark"] #members-table tr:hover,
+[data-theme="dark"] #members-table tr:focus-within,
+[data-theme="dark"] #members-mobile article:hover,
+[data-theme="dark"] #members-mobile article:focus-within { background-color: #1d3048 !important; color: #f1f5f9; }
+[data-theme="dark"] #members-table,
+[data-theme="dark"] #members-mobile { border-color: #334155; }
+[data-theme="dark"] #members-table tr,
+[data-theme="dark"] #members-mobile article { border-color: #334155; }
+[data-theme="dark"] :is(.status-active,.status-expiring-soon,.status-overdue) { border: 1px solid transparent; }
+[data-theme="dark"] .status-active { background: #153e32; border-color: #276750; color: #a7f3d0; }
+[data-theme="dark"] .status-expiring-soon { background: #473719; border-color: #765b27; color: #fde68a; }
+[data-theme="dark"] .status-overdue { background: #47252c; border-color: #7f3944; color: #fecaca; }
+[data-theme="dark"] :is(input,select,textarea):focus-visible { outline: 2px solid #a5b4fc; outline-offset: 1px; }
+[data-theme="dark"] .focus-ring:focus-visible { outline-color: #a5b4fc; }
+[data-theme="dark"] :is(button,a).bg-indigo-600 { background-color: #4f46e5 !important; color: #fff !important; }
+[data-theme="dark"] :is(button,a).bg-indigo-600:hover { background-color: #4338ca !important; }
+[data-theme="dark"] :is(button,a).bg-green-700 { background-color: #15803d !important; color: #fff !important; }
+[data-theme="dark"] .enterprise-panel { box-shadow: 0 14px 38px rgba(0, 0, 0, .18); }
+[data-theme="dark"] :is(#summary-cards > button,.offer-card):hover { box-shadow: 0 15px 32px rgba(0, 0, 0, .25); }
 [data-theme="light"] body.bg-slate-900 { background-color: #f8fafc !important; color: #0f172a !important; }
 [data-theme="light"] body.bg-slate-900 header, [data-theme="light"] body.bg-slate-900 footer,
 [data-theme="light"] body.bg-slate-900 main section.bg-slate-900, [data-theme="light"] body.bg-slate-900 main section.bg-slate-950 { background-color: #fff !important; border-color: #e2e8f0 !important; }
@@ -58,6 +77,34 @@ dialog::backdrop { background: rgba(15, 23, 42, .62); backdrop-filter: blur(2px)
 dialog[open] { animation: dialog-in .16s ease-out; }
 @keyframes dialog-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
 .focus-ring:focus-visible { outline: 3px solid rgba(79, 70, 229, .35); outline-offset: 2px; }
+.motion-enter { animation: surface-enter .42s cubic-bezier(.2, .75, .2, 1) both; }
+.enterprise-panel { box-shadow: 0 12px 36px rgba(15, 23, 42, .055); transition: box-shadow .22s ease, border-color .22s ease; }
+.enterprise-panel:focus-within { border-color: #a5b4fc; box-shadow: 0 14px 38px rgba(79, 70, 229, .10); }
+#summary-cards > * { position: relative; overflow: hidden; isolation: isolate; animation: surface-enter .42s cubic-bezier(.2, .75, .2, 1) both; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+#summary-cards > :nth-child(2) { animation-delay: .06s; }
+#summary-cards > :nth-child(3) { animation-delay: .12s; }
+#summary-cards > :nth-child(4) { animation-delay: .18s; }
+#summary-cards > *::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: currentColor; opacity: .45; }
+#summary-cards > :nth-child(1)::before { background: #16a34a; }
+#summary-cards > :nth-child(2)::before { background: #d97706; }
+#summary-cards > :nth-child(3)::before { background: #dc2626; }
+#summary-cards > :nth-child(4)::before { background: #4f46e5; }
+.offer-card { animation: surface-enter .32s ease-out both; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.member-row, .member-card { transition: background-color .18s ease, box-shadow .18s ease; }
+.action-button, main button, main a.rounded-xl, dialog button { transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease; }
+.action-button:active, main button:active, dialog button:active { transform: scale(.97); }
+#toast:not(.hidden), #payment-success:not(.hidden), #offer-form:not(.hidden) { animation: surface-enter .24s ease-out both; }
+@keyframes surface-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media (hover: hover) and (pointer: fine) {
+    #summary-cards > button:hover, .offer-card:hover { transform: translateY(-3px); box-shadow: 0 15px 32px rgba(15, 23, 42, .12); }
+    .action-button:hover, main button:not([disabled]):hover { box-shadow: 0 5px 14px rgba(15, 23, 42, .12); }
+    .member-card:hover { box-shadow: inset 3px 0 #6366f1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .motion-enter, #summary-cards > *, .offer-card, #toast:not(.hidden), #payment-success:not(.hidden), #offer-form:not(.hidden), dialog[open] { animation: none !important; }
+    .enterprise-panel, #summary-cards > *, .offer-card, .member-row, .member-card, .action-button, main button, main a.rounded-xl, dialog button { transition: none !important; }
+    #summary-cards > button:hover, .offer-card:hover, .action-button:active, main button:active, dialog button:active { transform: none !important; }
+}
 .status-active { background: #dcfce7; color: #166534; }
 .status-expiring-soon { background: #fef3c7; color: #92400e; }
 .status-overdue { background: #fee2e2; color: #991b1b; }

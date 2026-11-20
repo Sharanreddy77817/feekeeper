@@ -50,31 +50,30 @@ public class ReceiptService {
     private byte[] render(Tenant tenant, Member member, Payment payment) {
         try {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            Document document = new Document(PageSize.A5, 34, 34, 30, 30);
+            Document document = new Document(PageSize.A5, 38, 38, 34, 32);
             PdfWriter.getInstance(document, output);
             document.open();
 
             document.add(header(tenant));
-            document.add(Chunk.NEWLINE);
+            document.add(new Paragraph(" ", font(5, Font.NORMAL, MUTED)));
             document.add(receiptMeta(payment));
-            document.add(Chunk.NEWLINE);
+            document.add(new Paragraph(" ", font(5, Font.NORMAL, MUTED)));
             document.add(sectionTitle("MEMBER DETAILS"));
             document.add(detailsTable(new String[][]{
                     {"Member name", member.getFullName()},
-                    {"Phone", member.getPhone()},
-                    {"Membership plan", member.getPlanName()},
-                    {"Plan duration", member.getPlanDurationDays() + " days"}
+                    {"Phone", member.getPhone()}
             }));
-            document.add(Chunk.NEWLINE);
-            document.add(sectionTitle("PAYMENT DETAILS"));
-            document.add(detailsTable(new String[][]{
-                    {"Payment date", formatDate(payment.getPaymentDate())},
-                    {"Payment method", payment.getPaymentMode() == PaymentMode.UPI ? "UPI" : "Cash"},
-                    {"Membership valid until", formatDate(payment.getNewExpiryDate())}
-            }));
-            document.add(Chunk.NEWLINE);
+            document.add(new Paragraph(" ", font(5, Font.NORMAL, MUTED)));
+            document.add(sectionTitle("PAYMENT SUMMARY"));
+            document.add(lineItems(tenant, member, payment));
+            document.add(new Paragraph(" ", font(5, Font.NORMAL, MUTED)));
             document.add(amountPanel(tenant, payment));
-            document.add(Chunk.NEWLINE);
+            document.add(new Paragraph(" ", font(5, Font.NORMAL, MUTED)));
+            document.add(detailsTable(new String[][]{
+                    {"Payment method", payment.getPaymentMode() == PaymentMode.UPI ? "UPI" : "Cash"},
+                    {"Membership renewed until", formatDate(payment.getNewExpiryDate())}
+            }));
+            document.add(new Paragraph(" ", font(7, Font.NORMAL, MUTED)));
             document.add(footer(tenant));
             document.close();
             return output.toByteArray();
@@ -84,24 +83,29 @@ public class ReceiptService {
     }
 
     private PdfPTable header(Tenant tenant) throws DocumentException {
-        PdfPTable table = new PdfPTable(new float[]{3.4f, 1.2f});
+        PdfPTable table = new PdfPTable(new float[]{3.1f, 1.4f});
         table.setWidthPercentage(100);
-        PdfPCell brand = cell(tenant.getBusinessName(), font(19, Font.BOLD, Color.WHITE), BRAND, 13, 14, 12, 14);
+        Paragraph brandText = new Paragraph();
+        brandText.add(new Chunk(tenant.getBusinessName() + "\n", font(17, Font.BOLD, Color.WHITE)));
+        brandText.add(new Chunk("FEEKEEPER PAYMENT RECEIPT", font(7, Font.BOLD, new Color(202, 220, 240))));
+        PdfPCell brand = new PdfPCell(brandText);
+        brand.setBackgroundColor(BRAND);
+        brand.setPadding(14);
         brand.setBorder(Rectangle.NO_BORDER);
         brand.setVerticalAlignment(Element.ALIGN_MIDDLE);
         table.addCell(brand);
-        PdfPCell receipt = cell("FEE\nRECEIPT", font(9, Font.BOLD, Color.WHITE), ACCENT, 10, 7, 10, 7);
+        PdfPCell receipt = cell("PAID\n\nRECEIPT", font(10, Font.BOLD, Color.WHITE), ACCENT, 10, 7, 10, 7);
         receipt.setBorder(Rectangle.NO_BORDER);
         receipt.setHorizontalAlignment(Element.ALIGN_CENTER);
         receipt.setVerticalAlignment(Element.ALIGN_MIDDLE);
         table.addCell(receipt);
 
-        String contact = "Owner: " + tenant.getOwnerName() + "\nPhone: " + tenant.getPhone();
+        String contact = tenant.getOwnerName() + "  |  " + tenant.getPhone();
         if (tenant.getUpiId() != null && !tenant.getUpiId().isBlank()) contact += "\nUPI: " + tenant.getUpiId();
         PdfPCell contactCell = cell(contact, font(8, Font.NORMAL, INK), PALE, 8, 10, 8, 10);
         contactCell.setBorder(Rectangle.NO_BORDER);
         table.addCell(contactCell);
-        PdfPCell paid = cell("PAYMENT\nRECEIVED", font(8, Font.BOLD, ACCENT), PALE, 8, 7, 8, 7);
+        PdfPCell paid = cell("ISSUED BY\n" + tenant.getBusinessName(), font(8, Font.BOLD, ACCENT), PALE, 8, 7, 8, 7);
         paid.setBorder(Rectangle.NO_BORDER);
         paid.setHorizontalAlignment(Element.ALIGN_CENTER);
         table.addCell(paid);
@@ -112,8 +116,44 @@ public class ReceiptService {
         PdfPTable table = new PdfPTable(new float[]{1.4f, 1f});
         table.setWidthPercentage(100);
         table.addCell(metaBlock("RECEIPT NUMBER", payment.getReceiptNumber()));
-        table.addCell(metaBlock("ISSUED ON", formatDate(payment.getPaymentDate())));
+        table.addCell(metaBlock("PAYMENT DATE", formatDate(payment.getPaymentDate())));
         return table;
+    }
+
+    private PdfPTable lineItems(Tenant tenant, Member member, Payment payment) throws DocumentException {
+        PdfPTable table = new PdfPTable(new float[]{2.2f, 1f});
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{2.2f, 1f});
+        PdfPCell description = cell("DESCRIPTION", font(7, Font.BOLD, Color.WHITE), BRAND, 8, 9, 8, 9);
+        description.setBorder(Rectangle.NO_BORDER);
+        PdfPCell total = cell("AMOUNT", font(7, Font.BOLD, Color.WHITE), BRAND, 8, 9, 8, 9);
+        total.setBorder(Rectangle.NO_BORDER);
+        total.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(description);
+        table.addCell(total);
+
+        addLineItem(table, member.getPlanName() + " membership (" + member.getPlanDurationDays() + " days)",
+                money(tenant, member.getPlanAmount()), PALE);
+        if (payment.getDiscountAmount() != null && payment.getDiscountAmount().signum() > 0) {
+            addLineItem(table, "Promotion discount", "- " + money(tenant, payment.getDiscountAmount()), Color.WHITE);
+        }
+        return table;
+    }
+
+    private void addLineItem(PdfPTable table, String description, String amount, Color background) {
+        PdfPCell detail = cell(description, font(8, Font.NORMAL, INK), background, 9, 9, 9, 9);
+        detail.setBorder(Rectangle.BOTTOM);
+        detail.setBorderColorBottom(LINE);
+        PdfPCell value = cell(amount, font(8, Font.BOLD, INK), background, 9, 9, 9, 9);
+        value.setBorder(Rectangle.BOTTOM);
+        value.setBorderColorBottom(LINE);
+        value.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(detail);
+        table.addCell(value);
+    }
+
+    private String money(Tenant tenant, java.math.BigDecimal amount) {
+        return tenant.getCurrencySymbol() + " " + tenant.getCurrencyCode() + " " + amount.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 
     private PdfPCell metaBlock(String label, String value) {
@@ -151,12 +191,12 @@ public class ReceiptService {
     private PdfPTable amountPanel(Tenant tenant, Payment payment) throws DocumentException {
         PdfPTable panel = new PdfPTable(new float[]{1f, 1f});
         panel.setWidthPercentage(100);
-        PdfPCell amount = cell("AMOUNT PAID\n" + tenant.getCurrencySymbol() + " " + tenant.getCurrencyCode() + " " + payment.getAmountPaid().setScale(2, RoundingMode.HALF_UP).toPlainString(),
-                font(14, Font.BOLD, Color.WHITE), BRAND, 12, 12, 12, 12);
+        PdfPCell amount = cell("TOTAL PAID\n" + money(tenant, payment.getAmountPaid()),
+                font(15, Font.BOLD, Color.WHITE), BRAND, 14, 13, 14, 13);
         amount.setBorder(Rectangle.NO_BORDER);
         amount.setVerticalAlignment(Element.ALIGN_MIDDLE);
         panel.addCell(amount);
-        PdfPCell status = cell("STATUS\nPAID", font(12, Font.BOLD, Color.WHITE), ACCENT, 12, 12, 12, 12);
+        PdfPCell status = cell("PAYMENT RECEIVED\nPAID IN FULL", font(9, Font.BOLD, Color.WHITE), ACCENT, 14, 9, 14, 9);
         status.setBorder(Rectangle.NO_BORDER);
         status.setHorizontalAlignment(Element.ALIGN_CENTER);
         status.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -168,8 +208,8 @@ public class ReceiptService {
     private PdfPTable footer(Tenant tenant) throws DocumentException {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
-        PdfPCell cell = cell("Thank you for choosing " + tenant.getBusinessName() + ".\nThis is a computer-generated payment receipt.",
-                font(8, Font.NORMAL, MUTED), Color.WHITE, 8, 2, 4, 2);
+        PdfPCell cell = cell("Thank you for your payment, " + tenant.getBusinessName() + ".\nThis is a computer-generated payment receipt; no signature is required.",
+                font(8, Font.NORMAL, MUTED), Color.WHITE, 10, 2, 5, 2);
         cell.setBorder(Rectangle.TOP);
         cell.setBorderColorTop(LINE);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);

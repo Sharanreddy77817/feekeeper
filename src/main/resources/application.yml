@@ -75,7 +75,7 @@ app:
     api-key: ${WHATSAPP_API_KEY:}
     phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
     template-name: ${WHATSAPP_TEMPLATE_NAME:fee_reminder}
-    language-code: ${WHATSAPP_LANGUAGE_CODE:en}
+    language-code: ${WHATSAPP_LANGUAGE_CODE:en_IN}
     connect-timeout: ${WHATSAPP_CONNECT_TIMEOUT:3s}
     read-timeout: ${WHATSAPP_READ_TIMEOUT:10s}
     retry-attempts: ${WHATSAPP_RETRY_ATTEMPTS:3}

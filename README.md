@@ -114,13 +114,13 @@ The generated OpenAPI 3 document is available at `http://localhost:8080/v3/api-d
 
 The status and reminder job runs daily at 10:00 Asia/Kolkata. ShedLock stores its distributed lock in PostgreSQL so only one application instance performs the run. It processes members in bounded pages, refreshes statuses through `MemberStatusCalculator`, and sends reminders for memberships expiring in exactly three days or overdue by one through seven days. A successful send records the date; failed sends remain eligible and do not stop the batch.
 
-`WHATSAPP_PROVIDER` selects `mock` (the default), `meta`, `aisensy`, or `interakt`. Meta Cloud API is supported directly without a BSP subscription. Meta message charges may still apply. Before enabling it, create a Meta business/WhatsApp account, register a sending number, create and get approval for a utility reminder template, then set these Render environment values:
+`WHATSAPP_PROVIDER` selects `mock` (the default), `meta`, `aisensy`, or `interakt`. Meta Cloud API is supported directly without a BSP subscription. Meta message charges may still apply. Before enabling it, create a Meta business/WhatsApp account, register a sending number, create and get approval for a utility reminder template, then set these Render environment values. See [Meta WhatsApp setup](docs/META_WHATSAPP_SETUP.md) for the exact template and checklist:
 
 - `WHATSAPP_PROVIDER=meta`
 - `WHATSAPP_BASE_URL=https://graph.facebook.com/v27.0`
 - `WHATSAPP_API_KEY` to the Meta access token (keep it secret)
 - `WHATSAPP_PHONE_NUMBER_ID` to the registered phone number ID
-- `WHATSAPP_TEMPLATE_NAME` and `WHATSAPP_LANGUAGE_CODE` to the approved template
+- `WHATSAPP_TEMPLATE_NAME=fee_reminder` and `WHATSAPP_LANGUAGE_CODE=en_IN` (or the exact approved locale)
 
 The approved template body must use six text placeholders in this order: member name (`{{1}}`), business name (`{{2}}`), reminder variant text (`{{3}}`), amount (`{{4}}`), expiry date (`{{5}}`), and UPI ID or fallback instructions (`{{6}}`). For example: `Hello {{1}}, a reminder from {{2}}: {{3}} Amount due: ₹{{4}}. Expiry date: {{5}}. UPI ID: {{6}}. Thank you.` Only use this after Meta approves it and members have opted in to reminders. Keep mock selected until setup is complete.
 

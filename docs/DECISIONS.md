@@ -68,6 +68,7 @@
 - Meta's template request mapping uses six ordered body parameters from `ReminderMessageFormatter`: member, business, reminder text, amount, expiry date, and UPI/payment fallback. The business must create and approve a template matching this order before setting `WHATSAPP_PROVIDER=meta`.
 - The Cloud API access token is carried only in the Authorization header from environment configuration; logs do not include it. `WHATSAPP_PHONE_NUMBER_ID` is a separate required environment value for this provider.
 - No Meta credentials or account setup are stored in the repository. Configure the phone number ID, access token, API version URL, approved template name/language in Render after completing Meta onboarding.
+- The Meta template locale defaults to `en_IN` to match the India reminder copy. Production stays on the mock provider until a live Meta number, production token, exact approved template locale/name, and opted-in test recipient are configured; see `docs/META_WHATSAPP_SETUP.md`.
 
 ## Receipt presentation
 

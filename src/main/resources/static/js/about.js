@@ -5,56 +5,42 @@
         USD: {
             code: 'USD',
             symbol: '$',
-            monthly: '49',
-            festival: '39',
-            festivalTag: '20% Holiday Discount',
-            yearly: '390',
-            yearlyPerMonth: '$32.50 / mo',
-            yearlySavings: 'Save $198/year (2 Months Free)'
+            monthly: '19',
+            festival: '19',
+            festivalTag: '1 month free trial',
+            yearly: '190',
+            yearlyPerMonth: '$15.83 / mo, billed yearly',
+            yearlySavings: 'Save $38/year'
         },
         EUR: {
             code: 'EUR',
             symbol: '€',
-            monthly: '45',
-            festival: '36',
-            festivalTag: '20% Seasonal Promo',
-            yearly: '360',
-            yearlyPerMonth: '€30.00 / mo',
-            yearlySavings: 'Save €180/year (2 Months Free)'
+            monthly: '17', festival: '17', festivalTag: '1 month free trial', yearly: '170',
+            yearlyPerMonth: '€14.17 / mo, billed yearly', yearlySavings: 'Save €34/year'
         },
         GBP: {
             code: 'GBP',
             symbol: '£',
-            monthly: '39',
-            festival: '31',
-            festivalTag: '20% Summer Boost',
-            yearly: '310',
-            yearlyPerMonth: '£25.80 / mo',
-            yearlySavings: 'Save £158/year (2 Months Free)'
+            monthly: '15', festival: '15', festivalTag: '1 month free trial', yearly: '150',
+            yearlyPerMonth: '£12.50 / mo, billed yearly', yearlySavings: 'Save £30/year'
         },
         AED: {
             code: 'AED',
             symbol: 'AED ',
-            monthly: '180',
-            festival: '145',
-            festivalTag: '20% Ramadan / Eid Special',
-            yearly: '1,440',
-            yearlyPerMonth: 'AED 120 / mo',
-            yearlySavings: 'Save AED 720/year'
+            monthly: '69', festival: '69', festivalTag: '1 month free trial', yearly: '690',
+            yearlyPerMonth: 'AED 57.50 / mo, billed yearly', yearlySavings: 'Save AED 138/year'
         },
+        AUD: { code: 'AUD', symbol: 'A$', monthly: '29', festival: '29', festivalTag: '1 month free trial', yearly: '290', yearlyPerMonth: 'A$24.17 / mo, billed yearly', yearlySavings: 'Save A$58/year' },
+        CAD: { code: 'CAD', symbol: 'C$', monthly: '26', festival: '26', festivalTag: '1 month free trial', yearly: '260', yearlyPerMonth: 'C$21.67 / mo, billed yearly', yearlySavings: 'Save C$52/year' },
         INR: {
             code: 'INR',
             symbol: '₹',
-            monthly: '1,999',
-            festival: '1,499',
-            festivalTag: 'Diwali & New Year Offer: 25% OFF',
-            yearly: '14,999',
-            yearlyPerMonth: '₹1,249 / mo',
-            yearlySavings: 'Save ₹8,989/year (Pay 10, Get 12 Months)'
+            monthly: '999', festival: '999', festivalTag: '1 month free trial', yearly: '9,990',
+            yearlyPerMonth: '₹833 / mo, billed yearly', yearlySavings: 'Save ₹1,998/year'
         }
     };
 
-    let currentCurrency = 'USD';
+    let currentCurrency = 'INR';
     let currentMode = 'yearly'; // 'monthly', 'festival', 'yearly'
 
     function updateDisplay() {
@@ -91,6 +77,18 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        const countrySelect = document.getElementById('country-select');
+        if (countrySelect) {
+            const detected = (navigator.language || '').toUpperCase().split('-').pop();
+            const countryCurrency = { IN: 'INR', US: 'USD', GB: 'GBP', IE: 'EUR', DE: 'EUR', FR: 'EUR', ES: 'EUR', IT: 'EUR', NL: 'EUR', AE: 'AED' };
+            const preferred = countryCurrency[detected] || 'INR';
+            if ([...countrySelect.options].some(option => option.value === preferred)) countrySelect.value = preferred;
+            currentCurrency = countrySelect.value;
+            countrySelect.addEventListener('change', () => {
+                currentCurrency = countrySelect.value;
+                updateDisplay();
+            });
+        }
         document.querySelectorAll('[data-currency-btn]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const target = e.currentTarget.getAttribute('data-currency-btn');

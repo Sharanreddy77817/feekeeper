@@ -1,8 +1,10 @@
 package in.feekeeper.auth;
 
 import in.feekeeper.auth.dto.*;
+import in.feekeeper.common.exception.BadRequestException;
 import in.feekeeper.common.exception.ConflictException;
 import in.feekeeper.tenant.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +21,33 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final Clock clock;
+    private final String registrationSecretKey;
     private final String dummyPasswordHash;
 
     public AuthService(TenantRepository tenantRepository, UserRepository userRepository,
                        PasswordEncoder passwordEncoder, JwtService jwtService, Clock clock) {
-        this.tenantRepository = tenantRepository; this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder; this.jwtService = jwtService; this.clock = clock;
+        this(tenantRepository, userRepository, passwordEncoder, jwtService, clock, "zovak2026");
+    }
+
+    public AuthService(TenantRepository tenantRepository, UserRepository userRepository,
+                       PasswordEncoder passwordEncoder, JwtService jwtService, Clock clock,
+                       @Value("${app.registration.secret-key:zovak2026}") String registrationSecretKey) {
+        this.tenantRepository = tenantRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.clock = clock;
+        this.registrationSecretKey = registrationSecretKey != null ? registrationSecretKey.trim() : "zovak2026";
         this.dummyPasswordHash = passwordEncoder.encode("FeeKeeper timing equalization value");
     }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        String providedKey = request.secretKey() != null ? request.secretKey().trim() : "";
+        if (!registrationSecretKey.equalsIgnoreCase(providedKey)) {
+            log.warn("Registration rejected: invalid secret key provided: {}", providedKey);
+            throw new BadRequestException("INVALID_SECRET_KEY", "Invalid registration secret key. Contact Admin on WhatsApp (+91 96063 95170) to obtain an authorized key.");
+        }
         String email = normalizeEmail(request.email());
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("EMAIL_ALREADY_REGISTERED", "An account with this email already exists");

@@ -58,6 +58,24 @@ class AuthServiceTest {
         verifyNoInteractions(tenants);
     }
 
+    @Test void registrationRejectsInvalidSecretKey() {
+        RegisterRequest req = new RegisterRequest("Invalid Gym", "Owner", "9876543210", null,
+                "owner@invalid.com", "password123", "ANDROMEDA", "WRONG-KEY");
+        assertThatThrownBy(() -> service.register(req))
+                .isInstanceOf(in.feekeeper.common.exception.BadRequestException.class)
+                .hasMessageContaining("Invalid registration secret key");
+        verifyNoInteractions(tenants);
+    }
+
+    @Test void registrationAcceptsValidSecretKeyCaseInsensitive() {
+        when(encoder.encode("password123")).thenReturn("encoded");
+        RegisterRequest req = new RegisterRequest("Valid Gym", "Owner", "9876543210", null,
+                "owner@valid.com", "password123", "ANDROMEDA", "ZOVAK2026");
+        AuthResponse resp = service.register(req);
+        assertThat(resp.accessToken()).isNotBlank();
+        verify(tenants).save(any());
+    }
+
     @Test void loginReturnsTokenForMatchingPassword() {
         AppUser user = new AppUser(UUID.randomUUID(), "owner@example.com", "encoded", UserRole.OWNER, clock.instant());
         when(users.findByEmailIgnoreCase("owner@example.com")).thenReturn(Optional.of(user));

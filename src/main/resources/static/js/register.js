@@ -73,7 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
             businessName: form.businessName.value.trim(), ownerName: form.ownerName.value.trim(),
             phone: form.phone.value.trim(), upiId: form.upiId.value.trim() || null,
             email: form.email.value.trim(), password: form.password.value,
-            receiptTheme: checkedTheme ? checkedTheme.value : 'ANDROMEDA'
+            receiptTheme: checkedTheme ? checkedTheme.value : 'ANDROMEDA',
+            secretKey: form.secretKey ? form.secretKey.value.trim() : ''
         };
     }
     function validate(value) {
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (value.upiId && !upiPattern.test(value.upiId)) return ['upiId', 'Enter a valid UPI ID such as name@bank.'];
         if (!form.email.validity.valid) return ['email', 'Enter a valid email address.'];
         if (value.password.length < 8 || value.password.length > 72) return ['password', 'Password must be 8 to 72 characters.'];
+        if (!value.secretKey) return ['secretKey', 'Secret registration key is required. Contact admin on WhatsApp (+91 96063 95170) if you need a key.'];
         return null;
     }
     function showLocalError(name, text) {

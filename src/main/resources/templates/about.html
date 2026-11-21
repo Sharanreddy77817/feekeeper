@@ -145,16 +145,16 @@
                     <div class="relative mx-auto max-w-md animate-float">
                         <!-- Outer Glow Card -->
                         <div class="rounded-3xl border border-slate-700/60 bg-gradient-to-b from-slate-800/90 to-slate-900/90 p-6 shadow-2xl shadow-indigo-950/60 backdrop-blur-xl">
-                            <!-- Header Mock -->
-                            <div class="flex items-center justify-between border-b border-slate-700/60 pb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="grid h-10 w-10 place-items-center rounded-full bg-emerald-500/20 text-emerald-400 font-bold">💬</div>
-                                    <div>
-                                        <p class="text-sm font-bold text-white">WhatsApp Notification</p>
-                                        <p class="text-xs text-slate-400">Automated 10:00 AM Trigger</p>
+                            <!-- Header Mock: Fixed Single Row with shrink protection -->
+                            <div class="flex flex-row flex-nowrap items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
+                                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                    <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-base">💬</div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs sm:text-sm font-bold text-white whitespace-nowrap truncate">WhatsApp Notification</p>
+                                        <p class="text-[11px] sm:text-xs text-slate-400 whitespace-nowrap truncate">Automated 10:00 AM Trigger</p>
                                     </div>
                                 </div>
-                                <span class="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">Sent</span>
+                                <span class="shrink-0 whitespace-nowrap inline-flex items-center justify-center rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] sm:text-xs font-bold text-emerald-400 border border-emerald-500/20 shadow-xs">Sent</span>
                             </div>
 
                             <!-- WhatsApp Bubble -->

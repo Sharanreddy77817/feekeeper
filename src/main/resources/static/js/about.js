@@ -100,5 +100,95 @@
         });
 
         updateDisplay();
+        initReceiptShowcase();
     });
+
+    function initReceiptShowcase() {
+        const section = document.getElementById('digital-receipts');
+        if (!section) return;
+
+        let activeIndex = 1;
+        let cycleTimer = null;
+
+        function setSpotlight(index) {
+            activeIndex = index;
+            [1, 2, 3].forEach(i => {
+                const card = document.getElementById(`receipt-showcase-${i}`);
+                if (card) {
+                    if (i === index) card.classList.add('active-spotlight');
+                    else card.classList.remove('active-spotlight');
+                }
+            });
+
+            document.querySelectorAll('.receipt-pill-btn').forEach(btn => {
+                const target = Number(btn.getAttribute('data-spotlight'));
+                if (target === index) {
+                    btn.classList.add('ring-2', 'ring-purple-400', 'bg-slate-700');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-purple-400', 'bg-slate-700');
+                }
+            });
+        }
+
+        function startCycle() {
+            if (cycleTimer) clearInterval(cycleTimer);
+            cycleTimer = setInterval(() => {
+                activeIndex = activeIndex >= 3 ? 1 : activeIndex + 1;
+                setSpotlight(activeIndex);
+            }, 3600);
+        }
+
+        function stopCycle() {
+            if (cycleTimer) {
+                clearInterval(cycleTimer);
+                cycleTimer = null;
+            }
+        }
+
+        // Click on pill buttons
+        document.querySelectorAll('.receipt-pill-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = Number(btn.getAttribute('data-spotlight'));
+                if (idx) {
+                    setSpotlight(idx);
+                    startCycle();
+                }
+            });
+        });
+
+        // Click on individual cards
+        [1, 2, 3].forEach(i => {
+            const card = document.getElementById(`receipt-showcase-${i}`);
+            if (card) {
+                card.addEventListener('click', () => {
+                    setSpotlight(i);
+                    startCycle();
+                });
+            }
+        });
+
+        // Trigger entrance animations when section enters viewport
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        section.classList.add('is-visible');
+                        // After cards finish appearing one by one (1.3s + 0.85s ~ 2.2s), start spotlight cycling
+                        setTimeout(() => {
+                            setSpotlight(1);
+                            startCycle();
+                        }, 2200);
+                        observer.unobserve(section);
+                    }
+                });
+            }, { threshold: 0.15 });
+            observer.observe(section);
+        } else {
+            section.classList.add('is-visible');
+            setTimeout(() => {
+                setSpotlight(1);
+                startCycle();
+            }, 2200);
+        }
+    }
 })();

@@ -10,8 +10,14 @@ public record TenantSettingsResponse(
         String currencyCode,
         String currencySymbol,
         String timeZone,
-        String receiptTheme
+        String receiptTheme,
+        String unlockedThemes
 ) {
+    public TenantSettingsResponse(String businessName, String ownerName, String phone, String upiId,
+                                  String currencyCode, String currencySymbol, String timeZone, String receiptTheme) {
+        this(businessName, ownerName, phone, upiId, currencyCode, currencySymbol, timeZone, receiptTheme, "ANDROMEDA");
+    }
+
     public static TenantSettingsResponse from(Tenant tenant) {
         return new TenantSettingsResponse(
                 tenant.getBusinessName(),
@@ -21,7 +27,8 @@ public record TenantSettingsResponse(
                 tenant.getCurrencyCode(),
                 tenant.getCurrencySymbol(),
                 tenant.getTimeZone(),
-                tenant.getReceiptTheme()
+                tenant.getReceiptTheme(),
+                tenant.getUnlockedThemes()
         );
     }
 }

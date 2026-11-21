@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
     if (!FeeKeeperApi.requireSession()) return;
 
-    const state = {page: 0, size: 10, totalPages: 0, search: '', status: '', members: new Map(), payment: null, currency: 'INR', currencySymbol: '₹', timeZone:'Asia/Kolkata',promotions:[]};
+    const state = {page: 0, size: 10, totalPages: 0, search: '', status: '', members: new Map(), payment: null, currency: 'INR', currencySymbol: '₹', timeZone:'Asia/Kolkata',promotions:[], unlockedThemes: 'ANDROMEDA', activeReceiptTheme: 'ANDROMEDA'};
     const memberDialog = document.getElementById('member-dialog');
     const memberForm = document.getElementById('member-form');
     const paymentDialog = document.getElementById('payment-dialog');
@@ -49,8 +49,50 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.businessName=s.businessName||'';state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';state.timeZone=s.timeZone||'Asia/Kolkata';state.receiptTheme=s.receiptTheme||'ANDROMEDA';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
+    const unlockReceiptBtn = document.getElementById('btn-dashboard-unlock-theme');
+    if (unlockReceiptBtn) {
+        unlockReceiptBtn.addEventListener('click', async function () {
+            const themeToUnlock = state.activeReceiptTheme;
+            if (!themeToUnlock || isThemeUnlocked(themeToUnlock)) return;
+            unlockReceiptBtn.disabled = true;
+            unlockReceiptBtn.textContent = 'Unlocking...';
+            try {
+                const resp = await FeeKeeperApi.request('/api/tenant/settings/unlock-theme?theme=' + encodeURIComponent(themeToUnlock), {
+                    method: 'POST'
+                });
+                state.unlockedThemes = resp.unlockedThemes || (state.unlockedThemes + ',' + themeToUnlock);
+                const notice = document.getElementById('receipt-locked-notice');
+                if (notice) {
+                    notice.classList.add('hidden');
+                    notice.hidden = true;
+                }
+                FeeKeeperApi.showToast('Unlocked ' + (themeToUnlock === 'NEBULA' ? 'Nebula Cyber Pass' : 'Milky Way Starlight') + ' (+₹30)!');
+            } catch (err) {
+                FeeKeeperApi.showToast(err.message || 'Failed to unlock theme.', 'error');
+            } finally {
+                unlockReceiptBtn.disabled = false;
+                unlockReceiptBtn.textContent = 'Unlock for ₹30';
+            }
+        });
+    }
+
+    FeeKeeperApi.request('/api/tenant/settings').then(function(s){
+        state.businessName=s.businessName||'';
+        state.currency=s.currencyCode||'INR';
+        state.currencySymbol=s.currencySymbol||'₹';
+        state.timeZone=s.timeZone||'Asia/Kolkata';
+        state.receiptTheme=s.receiptTheme||'ANDROMEDA';
+        state.unlockedThemes=s.unlockedThemes||'ANDROMEDA';
+        loadSummary();
+        loadMembers();
+    }).catch(function(){loadSummary();loadMembers();});
     loadOffers();
+
+    function isThemeUnlocked(code) {
+        if (!code || code === 'ANDROMEDA') return true;
+        const list = (state.unlockedThemes || 'ANDROMEDA').split(',').map(function (s) { return s.trim().toUpperCase(); });
+        return list.includes(code);
+    }
 
     function switchReceiptTheme(targetId) {
         document.querySelectorAll('.receipt-galaxy-view').forEach(function (view) {
@@ -76,6 +118,22 @@ document.addEventListener('DOMContentLoaded', function () {
         if (targetId === 'receipt-ui-nebula') themeCode = 'NEBULA';
         else if (targetId === 'receipt-ui-milkyway') themeCode = 'MILKY_WAY';
         state.activeReceiptTheme = themeCode;
+
+        const notice = document.getElementById('receipt-locked-notice');
+        const lockedName = document.getElementById('locked-theme-name');
+        if (notice) {
+            if (!isThemeUnlocked(themeCode)) {
+                notice.classList.remove('hidden');
+                notice.hidden = false;
+                if (lockedName) {
+                    lockedName.textContent = themeCode === 'NEBULA' ? 'Cosmic Nebula Pass' : 'Milky Way Starlight';
+                }
+            } else {
+                notice.classList.add('hidden');
+                notice.hidden = true;
+            }
+        }
+
         if (state.payment && state.payment.result && state.payment.member) {
             const shareLink = document.getElementById('share-receipt');
             if (shareLink) shareLink.href = receiptWhatsAppUrl(themeCode, state.payment.member, state.payment.result);

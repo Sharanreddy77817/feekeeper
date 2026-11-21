@@ -124,7 +124,7 @@ class ReceiptServiceTest {
 
         assertThat(pageCount).isEqualTo(1);
         assertThat(text).contains("Cosmic Nebula Athletic Club", "NEBULA", "PAID IN FULL", "FK-2026-000088",
-                "Arjun Kapoor", "CrossFit Half-Yearly", "INR 1200.00", "21 May 2027", "Nebula Edition");
+                "Arjun Kapoor", "CrossFit Half-Yearly", "INR 1200.00", "21 May 2027", "FeeKeeper");
     }
 
     @Test

@@ -21,6 +21,7 @@ public class Tenant {
     @Column(name = "currency_symbol", nullable = false, length = 8) private String currencySymbol = "₹";
     @Column(name = "time_zone", nullable = false, length = 50) private String timeZone = "Asia/Kolkata";
     @Column(name = "receipt_theme", nullable = false, length = 50) private String receiptTheme = "ANDROMEDA";
+    @Column(name = "unlocked_themes", nullable = false, length = 150) private String unlockedThemes = "ANDROMEDA";
     @Column(name = "created_at", nullable = false) private Instant createdAt;
 
     public Tenant(String businessName, String ownerName, String phone, String upiId, Instant createdAt) {
@@ -34,6 +35,10 @@ public class Tenant {
         this.phone = phone;
         this.upiId = upiId;
         this.receiptTheme = normalizeTheme(receiptTheme);
+        this.unlockedThemes = "ANDROMEDA";
+        if (!"ANDROMEDA".equals(this.receiptTheme)) {
+            this.unlockedThemes += "," + this.receiptTheme;
+        }
         this.createdAt = createdAt;
     }
 
@@ -52,6 +57,30 @@ public class Tenant {
 
     public void updateReceiptTheme(String receiptTheme) {
         this.receiptTheme = normalizeTheme(receiptTheme);
+    }
+
+    public boolean hasThemeAccess(String theme) {
+        if (theme == null || theme.isBlank() || "ANDROMEDA".equalsIgnoreCase(theme.trim())) {
+            return true;
+        }
+        String clean = theme.trim().toUpperCase(Locale.ROOT);
+        if (unlockedThemes == null) return false;
+        for (String part : unlockedThemes.split(",")) {
+            if (part.trim().equalsIgnoreCase(clean) || part.trim().equalsIgnoreCase("ALL")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void unlockTheme(String theme) {
+        if (theme == null || theme.isBlank()) return;
+        String clean = theme.trim().toUpperCase(Locale.ROOT);
+        if (!hasThemeAccess(clean)) {
+            this.unlockedThemes = (this.unlockedThemes == null || this.unlockedThemes.isBlank())
+                    ? "ANDROMEDA," + clean
+                    : this.unlockedThemes + "," + clean;
+        }
     }
 
     public void updateSettings(String businessName, String ownerName, String phone, String upiId,

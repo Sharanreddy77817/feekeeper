@@ -23,91 +23,50 @@ import java.util.UUID;
 
 @Service
 public class ReceiptService {
-    public record ReceiptPalette(
-            String code,
-            String galaxyName,
-            Color brandPrimary,
-            Color brandSecondary,
-            Color accentDark,
-            Color accentBg,
-            Color accentBorder,
-            Color textMain,
-            Color textMuted,
-            Color bgPanel,
-            Color bgHeader,
-            Color borderLine,
-            String subHeading,
-            String stampHead,
-            String stampMain,
-            String stampSub,
-            String statusBadge,
-            String verifiedTitle
-    ) {}
-
-    public static final ReceiptPalette ANDROMEDA_PALETTE = new ReceiptPalette(
-            "ANDROMEDA",
-            "Andromeda Galaxy",
-            new Color(15, 23, 42),       // #0F172A
-            new Color(30, 58, 138),      // #1E3A8A
-            new Color(4, 120, 87),       // #047857
-            new Color(236, 253, 245),    // #ECFDF5
-            new Color(110, 231, 183),    // #6EE7B7
-            new Color(15, 23, 42),       // #0F172A
-            new Color(100, 116, 139),    // #64748B
-            new Color(248, 250, 252),    // #F8FAFC
-            new Color(241, 245, 249),    // #F1F5F9
-            new Color(226, 232, 240),    // #E2E8F0
-            "ANDROMEDA GALAXY · ACADEMIC & FITNESS DIGITAL RECORD",
-            "★ OFFICIAL RECEIPT ★",
-            "PAID IN FULL",
-            "PAYMENT RECEIVED",
-            "VERIFIED & ACTIVE",
-            "FeeKeeper Andromeda · Authenticated Digital Record"
-    );
-
-    public static final ReceiptPalette NEBULA_PALETTE = new ReceiptPalette(
-            "NEBULA",
-            "Cosmic Nebula",
-            new Color(30, 16, 53),       // #1E1035
-            new Color(109, 40, 217),     // #6D28D9
-            new Color(8, 145, 178),      // #0891B2
-            new Color(236, 254, 255),    // #ECFEFF
-            new Color(103, 232, 249),    // #67E8F9
-            new Color(30, 16, 53),       // #1E1035
-            new Color(107, 114, 128),    // #6B7280
-            new Color(245, 243, 255),    // #F5F3FF
-            new Color(237, 233, 254),    // #EDE9FE
-            new Color(221, 214, 254),    // #DDD6FE
-            "COSMIC NEBULA PASS · ATHLETIC FITNESS & COACHING CENTER",
-            "★ NEBULA PASS ★",
-            "PAID IN FULL",
-            "PAYMENT RECEIVED",
-            "NEBULA ACCESS ACTIVE",
-            "FeeKeeper Nebula · Cosmic Digital Record"
-    );
-
-    public static final ReceiptPalette MILKY_WAY_PALETTE = new ReceiptPalette(
-            "MILKY_WAY",
-            "Milky Way Starlight",
-            new Color(24, 24, 27),       // #18181B
-            new Color(180, 83, 9),       // #B45309
-            new Color(146, 64, 14),      // #92400E
-            new Color(254, 243, 199),    // #FEF3C7
-            new Color(252, 211, 77),     // #FCD34D
-            new Color(24, 24, 27),       // #18181B
-            new Color(120, 113, 108),    // #78716C
-            new Color(250, 250, 249),    // #FAFAF9
-            new Color(245, 245, 244),    // #F5F5F4
-            new Color(231, 229, 228),    // #E7E5E4
-            "MILKY WAY STELLAR RECORD · EXECUTIVE GYM & ACADEMY",
-            "✦ STELLAR RECEIPT ✦",
-            "PAID IN FULL",
-            "PAYMENT RECEIVED",
-            "STELLAR PRIVILEGE ACTIVE",
-            "FeeKeeper Milky Way · Stellar Executive Record"
-    );
 
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+
+    // ==========================================
+    // ANDROMEDA (Classic Prestige Palette)
+    // ==========================================
+    private static final Color ANDR_NAVY = new Color(15, 23, 42);       // #0F172A
+    private static final Color ANDR_BLUE = new Color(30, 58, 138);      // #1E3A8A
+    private static final Color ANDR_EMERALD = new Color(4, 120, 87);    // #047857
+    private static final Color ANDR_EMERALD_BG = new Color(236, 253, 245); // #ECFDF5
+    private static final Color ANDR_EMERALD_BORDER = new Color(110, 231, 183); // #6EE7B7
+    private static final Color ANDR_TEXT = new Color(15, 23, 42);
+    private static final Color ANDR_MUTED = new Color(100, 116, 139);
+    private static final Color ANDR_PANEL = new Color(248, 250, 252);
+    private static final Color ANDR_HEADER = new Color(241, 245, 249);
+    private static final Color ANDR_LINE = new Color(226, 232, 240);
+
+    // ==========================================
+    // NEBULA (Cosmic Athletic Cyber Palette)
+    // ==========================================
+    private static final Color NEB_DARK = new Color(30, 16, 53);        // #1E1035
+    private static final Color NEB_PURPLE = new Color(109, 40, 217);    // #6D28D9
+    private static final Color NEB_CYAN = new Color(8, 145, 178);       // #0891B2
+    private static final Color NEB_CYAN_BG = new Color(236, 254, 255);  // #ECFEFF
+    private static final Color NEB_CYAN_BORDER = new Color(103, 232, 249); // #67E8F9
+    private static final Color NEB_TEXT = new Color(30, 16, 53);
+    private static final Color NEB_MUTED = new Color(107, 114, 128);
+    private static final Color NEB_PANEL = new Color(245, 243, 255);
+    private static final Color NEB_HEADER = new Color(237, 233, 254);
+    private static final Color NEB_LINE = new Color(221, 214, 254);
+
+    // ==========================================
+    // MILKY WAY (Executive Luxury Starlight Palette)
+    // ==========================================
+    private static final Color MW_OBSIDIAN = new Color(24, 24, 27);     // #18181B
+    private static final Color MW_GOLD = new Color(180, 83, 9);         // #B45309
+    private static final Color MW_GOLD_DEEP = new Color(146, 64, 14);   // #92400E
+    private static final Color MW_GOLD_BG = new Color(254, 243, 199);   // #FEF3C7
+    private static final Color MW_GOLD_BORDER = new Color(252, 211, 77);// #FCD34D
+    private static final Color MW_TEXT = new Color(24, 24, 27);
+    private static final Color MW_MUTED = new Color(120, 113, 108);
+    private static final Color MW_PANEL = new Color(250, 250, 249);
+    private static final Color MW_HEADER = new Color(245, 245, 244);
+    private static final Color MW_LINE = new Color(231, 229, 228);
 
     private final PaymentRepository payments;
     private final MemberRepository members;
@@ -131,163 +90,495 @@ public class ReceiptService {
     }
 
     private byte[] render(Tenant tenant, Member member, Payment payment) {
+        String theme = tenant.getReceiptTheme() != null ? tenant.getReceiptTheme().trim().toUpperCase(Locale.ROOT) : "ANDROMEDA";
+        return switch (theme) {
+            case "NEBULA" -> renderNebula(tenant, member, payment);
+            case "MILKY_WAY" -> renderMilkyWay(tenant, member, payment);
+            default -> renderAndromeda(tenant, member, payment);
+        };
+    }
+
+    // =========================================================================
+    // 1. ANDROMEDA: Classic Academic & Corporate Institutional Style
+    // =========================================================================
+    private byte[] renderAndromeda(Tenant tenant, Member member, Payment payment) {
         try {
-            ReceiptPalette palette = paletteFor(tenant.getReceiptTheme());
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            // A5 dimensions: 419.53pt x 595.28pt. Margins: 22 left, 22 right, 18 top, 18 bottom
             Document document = new Document(PageSize.A5, 22, 22, 18, 18);
             PdfWriter writer = PdfWriter.getInstance(document, output);
-            writer.setPageEvent(new ReceiptPageFrame(palette));
+            writer.setPageEvent(new AndromedaPageFrame());
             document.open();
 
-            // 1. Header (Institute / Academy Branding + Official Paid Stamp)
-            document.add(header(tenant, palette));
-            document.add(spacer(3, palette));
+            // 1. Header (Classic Left Academy Info + Right Verified Stamp)
+            PdfPTable headerTable = new PdfPTable(new float[]{2.7f, 1.3f});
+            headerTable.setWidthPercentage(100);
 
-            // 2. Metadata Ribbon (Receipt No, Date, Mode, Status)
-            document.add(receiptMeta(payment, palette));
-            document.add(spacer(4, palette));
+            PdfPCell left = new PdfPCell();
+            left.setBorder(Rectangle.NO_BORDER);
+            left.setPadding(4);
 
-            // 3. Member & Schedule Two-Column Cards
-            document.add(memberAndScheduleCards(member, payment, palette));
-            document.add(spacer(4, palette));
+            Paragraph orgName = new Paragraph(tenant.getBusinessName(), font(14, Font.BOLD, ANDR_NAVY));
+            orgName.setLeading(16);
+            left.addElement(orgName);
 
-            // 4. Fee Particulars Itemized Table
-            document.add(lineItems(tenant, member, payment, palette));
-            document.add(spacer(3, palette));
+            Paragraph sub = new Paragraph("ANDROMEDA GALAXY · ACADEMIC & FITNESS DIGITAL RECORD", font(6.5f, Font.BOLD, ANDR_BLUE));
+            sub.setLeading(9);
+            sub.setSpacingBefore(1);
+            left.addElement(sub);
 
-            // 5. Payment Summary & Net Total Block
-            document.add(amountPanel(tenant, member, payment, palette));
-            document.add(spacer(4, palette));
+            String contact = "Desk Helpline: " + tenant.getPhone() + "  |  Center Head: " + tenant.getOwnerName() +
+                    (tenant.getUpiId() != null && !tenant.getUpiId().isBlank() ? "\nUPI ID: " + tenant.getUpiId() : "");
+            Paragraph contacts = new Paragraph(contact, font(7f, Font.NORMAL, ANDR_MUTED));
+            contacts.setLeading(9.5f);
+            contacts.setSpacingBefore(2);
+            left.addElement(contacts);
+            headerTable.addCell(left);
 
-            // 6. Important Gym & Coaching Regulations
-            document.add(termsAndRegulations(payment, palette));
-            document.add(spacer(3, palette));
+            PdfPCell stampContainer = new PdfPCell();
+            stampContainer.setBorder(Rectangle.NO_BORDER);
+            stampContainer.setPadding(3);
+            stampContainer.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-            // 7. Security Digital Verification & Signatory Stamp
-            document.add(signatoryBlock(tenant, palette));
-            document.add(spacer(2, palette));
+            PdfPTable stamp = new PdfPTable(1);
+            stamp.setWidthPercentage(100);
+            PdfPCell stampInner = new PdfPCell();
+            stampInner.setBackgroundColor(ANDR_EMERALD_BG);
+            stampInner.setBorder(Rectangle.BOX);
+            stampInner.setBorderColor(ANDR_EMERALD_BORDER);
+            stampInner.setBorderWidth(1f);
+            stampInner.setPadding(4);
+            stampInner.setHorizontalAlignment(Element.ALIGN_CENTER);
 
-            // 8. Micro-print Bottom Footer
-            document.add(footer(tenant, palette));
+            Paragraph stampHead = new Paragraph("★ OFFICIAL RECEIPT ★", font(6f, Font.BOLD, ANDR_EMERALD));
+            stampHead.setAlignment(Element.ALIGN_CENTER);
+            stampInner.addElement(stampHead);
+
+            Paragraph stampMain = new Paragraph("PAID IN FULL", font(10.5f, Font.BOLD, ANDR_EMERALD));
+            stampMain.setAlignment(Element.ALIGN_CENTER);
+            stampMain.setLeading(12);
+            stampInner.addElement(stampMain);
+
+            Paragraph stampSub = new Paragraph("PAYMENT RECEIVED", font(6.5f, Font.BOLD, ANDR_EMERALD));
+            stampSub.setAlignment(Element.ALIGN_CENTER);
+            stampSub.setLeading(8.5f);
+            stampInner.addElement(stampSub);
+
+            stamp.addCell(stampInner);
+            stampContainer.addElement(stamp);
+            headerTable.addCell(stampContainer);
+
+            document.add(headerTable);
+            document.add(spacer(3));
+
+            // 2. Metadata Ribbon
+            PdfPTable meta = new PdfPTable(new float[]{1.3f, 1.0f, 0.9f, 1.0f});
+            meta.setWidthPercentage(100);
+            meta.addCell(metaCell("RECEIPT NUMBER", payment.getReceiptNumber(), ANDR_NAVY, ANDR_PANEL, ANDR_LINE));
+            meta.addCell(metaCell("PAYMENT DATE", formatDate(payment.getPaymentDate()), ANDR_TEXT, ANDR_PANEL, ANDR_LINE));
+            meta.addCell(metaCell("PAYMENT MODE", payment.getPaymentMode() == PaymentMode.UPI ? "UPI" : "Cash", ANDR_TEXT, ANDR_PANEL, ANDR_LINE));
+            meta.addCell(metaCell("STATUS", "VERIFIED & ACTIVE", ANDR_EMERALD, ANDR_PANEL, ANDR_LINE));
+            document.add(meta);
+            document.add(spacer(4));
+
+            // 3. Two Boxed Profile & Validity Cards
+            PdfPTable cards = new PdfPTable(new float[]{1.15f, 1.0f});
+            cards.setWidthPercentage(100);
+
+            PdfPCell c1 = new PdfPCell();
+            c1.setBackgroundColor(ANDR_PANEL);
+            c1.setBorder(Rectangle.BOX);
+            c1.setBorderColor(ANDR_LINE);
+            c1.setBorderWidth(0.5f);
+            c1.setPadding(6);
+            c1.addElement(new Paragraph("MEMBER / STUDENT DETAILS", font(6.5f, Font.BOLD, ANDR_BLUE)));
+            Paragraph mName = new Paragraph(member.getFullName(), font(9.5f, Font.BOLD, ANDR_TEXT));
+            mName.setLeading(11.5f);
+            mName.setSpacingBefore(2);
+            c1.addElement(mName);
+            c1.addElement(new Paragraph("Phone: " + member.getPhone(), font(7f, Font.NORMAL, ANDR_MUTED)));
+            Paragraph mPlan = new Paragraph("Plan: " + member.getPlanName() + " (" + member.getPlanDurationDays() + " days)", font(7.5f, Font.BOLD, ANDR_NAVY));
+            mPlan.setLeading(9.5f);
+            mPlan.setSpacingBefore(2);
+            c1.addElement(mPlan);
+            cards.addCell(c1);
+
+            PdfPCell c2 = new PdfPCell();
+            c2.setBackgroundColor(ANDR_PANEL);
+            c2.setBorder(Rectangle.BOX);
+            c2.setBorderColor(ANDR_LINE);
+            c2.setBorderWidth(0.5f);
+            c2.setPadding(6);
+            c2.addElement(new Paragraph("MEMBERSHIP VALIDITY & ACCESS", font(6.5f, Font.BOLD, ANDR_BLUE)));
+            c2.addElement(new Paragraph("Renewal Validity: " + formatDate(payment.getPaymentDate()) + " to " + formatDate(payment.getNewExpiryDate()), font(7f, Font.NORMAL, ANDR_TEXT)));
+            Paragraph ren = new Paragraph("MEMBERSHIP RENEWED UNTIL:\n" + formatDate(payment.getNewExpiryDate()), font(8f, Font.BOLD, ANDR_EMERALD));
+            ren.setLeading(10);
+            ren.setSpacingBefore(2);
+            c2.addElement(ren);
+            c2.addElement(new Paragraph("Desk check-in & training access authorized", font(6.5f, Font.ITALIC, ANDR_MUTED)));
+            cards.addCell(c2);
+
+            document.add(cards);
+            document.add(spacer(4));
+
+            // 4. Line Items Table
+            document.add(createItemsTable(tenant, member, payment, ANDR_NAVY, ANDR_LINE, ANDR_EMERALD, ANDR_EMERALD_BG));
+            document.add(spacer(3));
+
+            // 5. Amount Panel
+            document.add(createAmountPanel(tenant, member, payment, ANDR_PANEL, ANDR_LINE, ANDR_BLUE, ANDR_NAVY, ANDR_EMERALD_BORDER));
+            document.add(spacer(4));
+
+            // 6. Regulations
+            document.add(createTerms(payment, ANDR_PANEL, ANDR_LINE, ANDR_MUTED));
+            document.add(spacer(3));
+
+            // 7. Signatory
+            document.add(createSignatory(tenant, ANDR_BLUE, ANDR_MUTED, ANDR_NAVY, ANDR_EMERALD, "FeeKeeper Andromeda · Authenticated Digital Record"));
+            document.add(spacer(2));
+
+            // 8. Footer
+            document.add(createFooter(tenant, ANDR_LINE, ANDR_MUTED, "Andromeda Galaxy Edition"));
 
             document.close();
             return output.toByteArray();
         } catch (DocumentException ex) {
-            throw new IllegalStateException("Could not generate receipt", ex);
+            throw new IllegalStateException("Could not generate Andromeda receipt", ex);
         }
     }
 
-    public ReceiptPalette paletteFor(String theme) {
-        if (theme == null || theme.isBlank()) {
-            return ANDROMEDA_PALETTE;
+    // =========================================================================
+    // 2. NEBULA: Futuristic Athletic Digital Pass / Cyber Stub Style
+    // =========================================================================
+    private byte[] renderNebula(Tenant tenant, Member member, Payment payment) {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            Document document = new Document(PageSize.A5, 18, 18, 14, 14);
+            PdfWriter writer = PdfWriter.getInstance(document, output);
+            writer.setPageEvent(new NebulaPageFrame());
+            document.open();
+
+            // 1. Full-Width Dark Cyber Hero Banner
+            PdfPTable hero = new PdfPTable(1);
+            hero.setWidthPercentage(100);
+
+            PdfPCell heroCell = new PdfPCell();
+            heroCell.setBackgroundColor(NEB_DARK);
+            heroCell.setBorder(Rectangle.BOX);
+            heroCell.setBorderColor(NEB_CYAN);
+            heroCell.setBorderWidth(1f);
+            heroCell.setPadding(8);
+
+            Paragraph topBadge = new Paragraph("★ NEBULA ATHLETIC DIGITAL PASS · TOUCHLESS ACCESS AUTHORIZED ★", font(6.5f, Font.BOLD, NEB_CYAN_BORDER));
+            topBadge.setAlignment(Element.ALIGN_CENTER);
+            topBadge.setLeading(8);
+            heroCell.addElement(topBadge);
+
+            Paragraph heroTitle = new Paragraph(tenant.getBusinessName().toUpperCase(Locale.ENGLISH), font(14f, Font.BOLD, Color.WHITE));
+            heroTitle.setAlignment(Element.ALIGN_CENTER);
+            heroTitle.setLeading(16);
+            heroTitle.setSpacingBefore(2);
+            heroCell.addElement(heroTitle);
+
+            Paragraph subline = new Paragraph("NEBULA PASS · ATHLETIC FITNESS & COACHING CENTER", font(7f, Font.BOLD, new Color(196, 181, 253)));
+            subline.setAlignment(Element.ALIGN_CENTER);
+            subline.setLeading(9.5f);
+            heroCell.addElement(subline);
+
+            String contactInfo = "Desk Helpline: " + tenant.getPhone() + "  |  Center Head: " + tenant.getOwnerName() +
+                    (tenant.getUpiId() != null && !tenant.getUpiId().isBlank() ? "  |  UPI: " + tenant.getUpiId() : "");
+            Paragraph contacts = new Paragraph(contactInfo, font(6.5f, Font.NORMAL, new Color(226, 232, 240)));
+            contacts.setAlignment(Element.ALIGN_CENTER);
+            contacts.setLeading(8.5f);
+            contacts.setSpacingBefore(2);
+            heroCell.addElement(contacts);
+
+            hero.addCell(heroCell);
+            document.add(hero);
+            document.add(spacer(3));
+
+            // 2. Cyber Pass Token & Gateway Ribbon (Ticket-Stub Style)
+            PdfPTable meta = new PdfPTable(new float[]{1.4f, 1.0f, 0.9f, 1.0f});
+            meta.setWidthPercentage(100);
+            meta.addCell(metaCell("PASS TOKEN / NO", payment.getReceiptNumber(), NEB_PURPLE, NEB_PANEL, NEB_LINE));
+            meta.addCell(metaCell("ISSUED DATE", formatDate(payment.getPaymentDate()), NEB_TEXT, NEB_PANEL, NEB_LINE));
+            meta.addCell(metaCell("GATEWAY MODE", payment.getPaymentMode() == PaymentMode.UPI ? "UPI / Digital" : "Cash Desk", NEB_TEXT, NEB_PANEL, NEB_LINE));
+            meta.addCell(metaCell("ACCESS STATUS", "PAID IN FULL · ACTIVE", NEB_CYAN, NEB_CYAN_BG, NEB_CYAN_BORDER));
+            document.add(meta);
+            document.add(spacer(3));
+
+            // 3. Athlete Roster & Facility Turnstile Cards
+            PdfPTable cards = new PdfPTable(new float[]{1.2f, 1.0f});
+            cards.setWidthPercentage(100);
+
+            PdfPCell c1 = new PdfPCell();
+            c1.setBackgroundColor(NEB_PANEL);
+            c1.setBorder(Rectangle.BOX);
+            c1.setBorderColor(NEB_PURPLE);
+            c1.setBorderWidth(0.75f);
+            c1.setPadding(6);
+            c1.addElement(new Paragraph("ATHLETE / MEMBER ROSTER", font(6.5f, Font.BOLD, NEB_PURPLE)));
+            Paragraph mName = new Paragraph(member.getFullName(), font(9.5f, Font.BOLD, NEB_DARK));
+            mName.setLeading(11.5f);
+            mName.setSpacingBefore(1.5f);
+            c1.addElement(mName);
+            c1.addElement(new Paragraph("Phone: " + member.getPhone(), font(7f, Font.NORMAL, NEB_MUTED)));
+            Paragraph mPlan = new Paragraph("Program: " + member.getPlanName() + " (" + member.getPlanDurationDays() + " days)", font(7.5f, Font.BOLD, NEB_PURPLE));
+            mPlan.setLeading(9.5f);
+            mPlan.setSpacingBefore(1.5f);
+            c1.addElement(mPlan);
+            cards.addCell(c1);
+
+            PdfPCell c2 = new PdfPCell();
+            c2.setBackgroundColor(NEB_CYAN_BG);
+            c2.setBorder(Rectangle.BOX);
+            c2.setBorderColor(NEB_CYAN);
+            c2.setBorderWidth(0.75f);
+            c2.setPadding(6);
+            c2.addElement(new Paragraph("TURNSTILE & BIOMETRIC ACCESS", font(6.5f, Font.BOLD, NEB_CYAN)));
+            c2.addElement(new Paragraph("Validity: " + formatDate(payment.getPaymentDate()) + " to " + formatDate(payment.getNewExpiryDate()), font(7f, Font.NORMAL, NEB_DARK)));
+            Paragraph ren = new Paragraph("ACCESS VALID THROUGH:\n" + formatDate(payment.getNewExpiryDate()), font(8f, Font.BOLD, NEB_DARK));
+            ren.setLeading(10);
+            ren.setSpacingBefore(2);
+            c2.addElement(ren);
+            c2.addElement(new Paragraph("Touchless turnstile entry & check-in active", font(6.5f, Font.ITALIC, NEB_MUTED)));
+            cards.addCell(c2);
+
+            document.add(cards);
+            document.add(spacer(3));
+
+            // 4. Line Items Table with Sporty Purple Headers
+            document.add(createItemsTable(tenant, member, payment, NEB_PURPLE, NEB_LINE, NEB_CYAN, NEB_CYAN_BG));
+            document.add(spacer(3));
+
+            // 5. Cyber Total Amount Banner with Barcode Simulator
+            PdfPTable panel = new PdfPTable(new float[]{1.3f, 1.5f});
+            panel.setWidthPercentage(100);
+
+            PdfPCell leftPanel = new PdfPCell();
+            leftPanel.setBackgroundColor(NEB_PANEL);
+            leftPanel.setBorder(Rectangle.BOX);
+            leftPanel.setBorderColor(NEB_LINE);
+            leftPanel.setBorderWidth(0.5f);
+            leftPanel.setPadding(6);
+            leftPanel.addElement(new Paragraph("PAYMENT METHOD & TOKEN VALIDATION", font(6.5f, Font.BOLD, NEB_PURPLE)));
+            leftPanel.addElement(new Paragraph("Payment Mode: " + (payment.getPaymentMode() == PaymentMode.UPI ? "UPI / Digital Gateway" : "Cash Desk"), font(7.5f, Font.BOLD, NEB_TEXT)));
+            if (payment.getPaymentMode() == PaymentMode.UPI && tenant.getUpiId() != null && !tenant.getUpiId().isBlank()) {
+                leftPanel.addElement(new Paragraph("Destination UPI: " + tenant.getUpiId(), font(7f, Font.NORMAL, NEB_MUTED)));
+            }
+            Paragraph secToken = new Paragraph("NEBULA-PASS-ID: " + payment.getReceiptNumber() + "  |  DESK CLEARANCE", font(6f, Font.BOLD, NEB_CYAN));
+            secToken.setLeading(8);
+            secToken.setSpacingBefore(2);
+            leftPanel.addElement(secToken);
+            panel.addCell(leftPanel);
+
+            PdfPCell rightPanel = new PdfPCell();
+            rightPanel.setBackgroundColor(NEB_DARK);
+            rightPanel.setBorder(Rectangle.NO_BORDER);
+            rightPanel.setPadding(6);
+            rightPanel.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            rightPanel.addElement(new Paragraph("TOTAL SETTLED", font(7f, Font.BOLD, NEB_CYAN_BORDER)));
+            Paragraph amt = new Paragraph(money(tenant, payment.getAmountPaid()), font(14f, Font.BOLD, Color.WHITE));
+            amt.setLeading(16f);
+            rightPanel.addElement(amt);
+            rightPanel.addElement(new Paragraph("★ PAYMENT RECEIVED · PAID IN FULL ★", font(6.5f, Font.BOLD, NEB_CYAN_BORDER)));
+            panel.addCell(rightPanel);
+
+            document.add(panel);
+            document.add(spacer(3));
+
+            // 6. Regulations
+            document.add(createTerms(payment, NEB_PANEL, NEB_LINE, NEB_MUTED));
+            document.add(spacer(2.5f));
+
+            // 7. Touchless Digital Signatory Block
+            document.add(createSignatory(tenant, NEB_PURPLE, NEB_MUTED, NEB_DARK, NEB_CYAN, "FeeKeeper Nebula · Cosmic Digital Record"));
+            document.add(spacer(2));
+
+            // 8. Footer
+            document.add(createFooter(tenant, NEB_LINE, NEB_MUTED, "Nebula Edition"));
+
+            document.close();
+            return output.toByteArray();
+        } catch (DocumentException ex) {
+            throw new IllegalStateException("Could not generate Nebula receipt", ex);
         }
-        return switch (theme.trim().toUpperCase(Locale.ROOT)) {
-            case "NEBULA" -> NEBULA_PALETTE;
-            case "MILKY_WAY" -> MILKY_WAY_PALETTE;
-            default -> ANDROMEDA_PALETTE;
-        };
     }
 
-    private Paragraph spacer(float height, ReceiptPalette palette) {
-        Paragraph p = new Paragraph(" ", font(height, Font.NORMAL, palette.textMuted()));
-        p.setLeading(height);
-        return p;
-    }
+    // =========================================================================
+    // 3. MILKY WAY: Centered Executive Luxury Starlight Certificate Style
+    // =========================================================================
+    private byte[] renderMilkyWay(Tenant tenant, Member member, Payment payment) {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            Document document = new Document(PageSize.A5, 20, 20, 16, 16);
+            PdfWriter writer = PdfWriter.getInstance(document, output);
+            writer.setPageEvent(new MilkyWayPageFrame());
+            document.open();
 
-    private PdfPTable header(Tenant tenant, ReceiptPalette palette) throws DocumentException {
-        PdfPTable table = new PdfPTable(new float[]{2.7f, 1.3f});
-        table.setWidthPercentage(100);
+            // 1. Centered Executive Luxury Crest Header
+            PdfPTable crestTable = new PdfPTable(1);
+            crestTable.setWidthPercentage(100);
 
-        // Left Cell: Institute / Academy Identity & Contacts
-        PdfPCell left = new PdfPCell();
-        left.setBorder(Rectangle.NO_BORDER);
-        left.setPadding(4);
+            PdfPCell crestCell = new PdfPCell();
+            crestCell.setBorder(Rectangle.NO_BORDER);
+            crestCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            crestCell.setPadding(4);
 
-        Paragraph orgName = new Paragraph(tenant.getBusinessName(), font(14, Font.BOLD, palette.brandPrimary()));
-        orgName.setLeading(16);
-        left.addElement(orgName);
+            Paragraph starCrest = new Paragraph("✦   ✦   ✦", font(9f, Font.BOLD, MW_GOLD));
+            starCrest.setAlignment(Element.ALIGN_CENTER);
+            starCrest.setLeading(11);
+            crestCell.addElement(starCrest);
 
-        Paragraph subHeading = new Paragraph(palette.subHeading(), font(6.5f, Font.BOLD, palette.brandSecondary()));
-        subHeading.setLeading(9);
-        subHeading.setSpacingBefore(1);
-        left.addElement(subHeading);
+            Paragraph bizTitle = new Paragraph(tenant.getBusinessName().toUpperCase(Locale.ENGLISH), font(14.5f, Font.BOLD, MW_OBSIDIAN));
+            bizTitle.setAlignment(Element.ALIGN_CENTER);
+            bizTitle.setLeading(17);
+            bizTitle.setSpacingBefore(1.5f);
+            crestCell.addElement(bizTitle);
 
-        String contact = "Desk Helpline: " + tenant.getPhone() + "  |  Center Head: " + tenant.getOwnerName();
-        if (tenant.getUpiId() != null && !tenant.getUpiId().isBlank()) {
-            contact += "\nUPI ID: " + tenant.getUpiId();
+            Paragraph subtitle = new Paragraph("MILKY WAY STELLAR RECORD · EXECUTIVE GYM & ACADEMY", font(7f, Font.BOLD, MW_GOLD_DEEP));
+            subtitle.setAlignment(Element.ALIGN_CENTER);
+            subtitle.setLeading(9.5f);
+            subtitle.setSpacingBefore(1);
+            crestCell.addElement(subtitle);
+
+            String contactText = "Helpline: " + tenant.getPhone() + "  •  Center Head: " + tenant.getOwnerName() +
+                    (tenant.getUpiId() != null && !tenant.getUpiId().isBlank() ? "  •  UPI ID: " + tenant.getUpiId() : "");
+            Paragraph contacts = new Paragraph(contactText, font(6.8f, Font.NORMAL, MW_MUTED));
+            contacts.setAlignment(Element.ALIGN_CENTER);
+            contacts.setLeading(8.5f);
+            contacts.setSpacingBefore(2);
+            crestCell.addElement(contacts);
+
+            Paragraph dividerRibbon = new Paragraph("✦ PRIVILEGED RECORD · SETTLED IN FULL · PAYMENT RECEIVED ✦", font(6.5f, Font.BOLD, MW_GOLD));
+            dividerRibbon.setAlignment(Element.ALIGN_CENTER);
+            dividerRibbon.setLeading(8.5f);
+            dividerRibbon.setSpacingBefore(2);
+            crestCell.addElement(dividerRibbon);
+
+            crestTable.addCell(crestCell);
+            document.add(crestTable);
+            document.add(spacer(3));
+
+            // 2. Minimalist Gold Metadata Ribbon
+            PdfPTable meta = new PdfPTable(new float[]{1.3f, 1.0f, 0.9f, 1.0f});
+            meta.setWidthPercentage(100);
+            meta.addCell(metaCell("REGISTRY CERTIFICATE", payment.getReceiptNumber(), MW_OBSIDIAN, MW_PANEL, MW_GOLD_BORDER));
+            meta.addCell(metaCell("PAYMENT DATE", formatDate(payment.getPaymentDate()), MW_TEXT, MW_PANEL, MW_GOLD_BORDER));
+            meta.addCell(metaCell("SETTLEMENT MODE", payment.getPaymentMode() == PaymentMode.UPI ? "UPI / Digital" : "Cash Treasury", MW_TEXT, MW_PANEL, MW_GOLD_BORDER));
+            meta.addCell(metaCell("PRIVILEGE STATUS", "PAID IN FULL · PRIVILEGED", MW_GOLD_DEEP, MW_GOLD_BG, MW_GOLD_BORDER));
+            document.add(meta);
+            document.add(spacer(3.5f));
+
+            // 3. Distinguished Patron & Executive Privilege Schedule
+            PdfPTable cards = new PdfPTable(new float[]{1.15f, 1.0f});
+            cards.setWidthPercentage(100);
+
+            PdfPCell c1 = new PdfPCell();
+            c1.setBackgroundColor(new Color(255, 253, 247)); // luxury parchment
+            c1.setBorder(Rectangle.BOX);
+            c1.setBorderColor(MW_GOLD_BORDER);
+            c1.setBorderWidth(0.75f);
+            c1.setPadding(6);
+            c1.addElement(new Paragraph("DISTINGUISHED PATRON DETAILS", font(6.5f, Font.BOLD, MW_GOLD)));
+            Paragraph mName = new Paragraph(member.getFullName(), font(9.5f, Font.BOLD, MW_OBSIDIAN));
+            mName.setLeading(11.5f);
+            mName.setSpacingBefore(1.5f);
+            c1.addElement(mName);
+            c1.addElement(new Paragraph("Phone: " + member.getPhone(), font(7f, Font.NORMAL, MW_MUTED)));
+            Paragraph mPlan = new Paragraph("Membership: " + member.getPlanName() + " (" + member.getPlanDurationDays() + " days)", font(7.5f, Font.BOLD, MW_OBSIDIAN));
+            mPlan.setLeading(9.5f);
+            mPlan.setSpacingBefore(1.5f);
+            c1.addElement(mPlan);
+            cards.addCell(c1);
+
+            PdfPCell c2 = new PdfPCell();
+            c2.setBackgroundColor(new Color(255, 253, 247));
+            c2.setBorder(Rectangle.BOX);
+            c2.setBorderColor(MW_GOLD_BORDER);
+            c2.setBorderWidth(0.75f);
+            c2.setPadding(6);
+            c2.addElement(new Paragraph("HONORED PRIVILEGE VALIDITY", font(6.5f, Font.BOLD, MW_GOLD)));
+            c2.addElement(new Paragraph("Renewal Validity: " + formatDate(payment.getPaymentDate()) + " to " + formatDate(payment.getNewExpiryDate()), font(7f, Font.NORMAL, MW_TEXT)));
+            Paragraph ren = new Paragraph("STELLAR ACCESS VALID UNTIL:\n" + formatDate(payment.getNewExpiryDate()), font(8f, Font.BOLD, MW_GOLD_DEEP));
+            ren.setLeading(10);
+            ren.setSpacingBefore(2);
+            c2.addElement(ren);
+            c2.addElement(new Paragraph("⭐ Executive training & facility privilege active", font(6.5f, Font.ITALIC, MW_MUTED)));
+            cards.addCell(c2);
+
+            document.add(cards);
+            document.add(spacer(3.5f));
+
+            // 4. Line Items Table with Obsidian & Champagne Headers
+            document.add(createItemsTable(tenant, member, payment, MW_OBSIDIAN, MW_LINE, MW_GOLD_DEEP, MW_GOLD_BG));
+            document.add(spacer(3));
+
+            // 5. Gilded Investment Block
+            PdfPTable panel = new PdfPTable(new float[]{1.3f, 1.5f});
+            panel.setWidthPercentage(100);
+
+            PdfPCell leftPanel = new PdfPCell();
+            leftPanel.setBackgroundColor(MW_PANEL);
+            leftPanel.setBorder(Rectangle.BOX);
+            leftPanel.setBorderColor(MW_LINE);
+            leftPanel.setBorderWidth(0.5f);
+            leftPanel.setPadding(6);
+            leftPanel.addElement(new Paragraph("PAYMENT METHOD & DETAILS", font(6.5f, Font.BOLD, MW_GOLD)));
+            leftPanel.addElement(new Paragraph("Payment Mode: " + (payment.getPaymentMode() == PaymentMode.UPI ? "UPI / Digital Settlement" : "Cash Treasury"), font(7.5f, Font.BOLD, MW_TEXT)));
+            if (payment.getPaymentMode() == PaymentMode.UPI && tenant.getUpiId() != null && !tenant.getUpiId().isBlank()) {
+                leftPanel.addElement(new Paragraph("Destination UPI: " + tenant.getUpiId(), font(7f, Font.NORMAL, MW_MUTED)));
+            }
+            leftPanel.addElement(new Paragraph("Classification: Executive Member Plan Renewal / Tuition", font(6.5f, Font.ITALIC, MW_MUTED)));
+            panel.addCell(leftPanel);
+
+            PdfPCell rightPanel = new PdfPCell();
+            rightPanel.setBackgroundColor(MW_OBSIDIAN);
+            rightPanel.setBorder(Rectangle.NO_BORDER);
+            rightPanel.setPadding(6);
+            rightPanel.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            rightPanel.addElement(new Paragraph("TOTAL PAID / PRIVILEGED INVESTMENT", font(6.5f, Font.BOLD, MW_GOLD_BORDER)));
+            Paragraph amt = new Paragraph(money(tenant, payment.getAmountPaid()), font(14f, Font.BOLD, Color.WHITE));
+            amt.setLeading(16f);
+            rightPanel.addElement(amt);
+            rightPanel.addElement(new Paragraph("✦ PAYMENT RECEIVED · PAID IN FULL ✦", font(6.5f, Font.BOLD, MW_GOLD_BORDER)));
+            panel.addCell(rightPanel);
+
+            document.add(panel);
+            document.add(spacer(3));
+
+            // 6. Regulations
+            document.add(createTerms(payment, MW_PANEL, MW_LINE, MW_MUTED));
+            document.add(spacer(2.5f));
+
+            // 7. Executive Signatory Block
+            document.add(createSignatory(tenant, MW_GOLD, MW_MUTED, MW_OBSIDIAN, MW_GOLD_DEEP, "FeeKeeper Milky Way · Stellar Executive Record"));
+            document.add(spacer(2));
+
+            // 8. Footer
+            document.add(createFooter(tenant, MW_LINE, MW_MUTED, "Milky Way Starlight Edition"));
+
+            document.close();
+            return output.toByteArray();
+        } catch (DocumentException ex) {
+            throw new IllegalStateException("Could not generate Milky Way receipt", ex);
         }
-        Paragraph contacts = new Paragraph(contact, font(7f, Font.NORMAL, palette.textMuted()));
-        contacts.setLeading(9.5f);
-        contacts.setSpacingBefore(2);
-        left.addElement(contacts);
-        table.addCell(left);
-
-        // Right Cell: Official "PAID" Stamp Badge
-        PdfPCell stampContainer = new PdfPCell();
-        stampContainer.setBorder(Rectangle.NO_BORDER);
-        stampContainer.setPadding(3);
-        stampContainer.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-        PdfPTable stamp = new PdfPTable(1);
-        stamp.setWidthPercentage(100);
-
-        PdfPCell stampInner = new PdfPCell();
-        stampInner.setBackgroundColor(palette.accentBg());
-        stampInner.setBorder(Rectangle.BOX);
-        stampInner.setBorderColor(palette.accentBorder());
-        stampInner.setBorderWidth(1f);
-        stampInner.setPaddingTop(4);
-        stampInner.setPaddingBottom(4);
-        stampInner.setPaddingLeft(6);
-        stampInner.setPaddingRight(6);
-        stampInner.setHorizontalAlignment(Element.ALIGN_CENTER);
-
-        Paragraph stampHead = new Paragraph(palette.stampHead(), font(6f, Font.BOLD, palette.accentDark()));
-        stampHead.setAlignment(Element.ALIGN_CENTER);
-        stampInner.addElement(stampHead);
-
-        Paragraph stampMain = new Paragraph(palette.stampMain(), font(10.5f, Font.BOLD, palette.accentDark()));
-        stampMain.setAlignment(Element.ALIGN_CENTER);
-        stampMain.setLeading(12);
-        stampInner.addElement(stampMain);
-
-        Paragraph stampSub = new Paragraph(palette.stampSub(), font(6.5f, Font.BOLD, palette.accentDark()));
-        stampSub.setAlignment(Element.ALIGN_CENTER);
-        stampSub.setLeading(8.5f);
-        stampInner.addElement(stampSub);
-
-        stamp.addCell(stampInner);
-        stampContainer.addElement(stamp);
-        table.addCell(stampContainer);
-
-        return table;
     }
 
-    private PdfPTable receiptMeta(Payment payment, ReceiptPalette palette) throws DocumentException {
-        PdfPTable table = new PdfPTable(new float[]{1.3f, 1.0f, 0.9f, 1.0f});
-        table.setWidthPercentage(100);
-
-        table.addCell(metaPill("RECEIPT NUMBER", payment.getReceiptNumber(), palette.brandPrimary(), palette));
-        table.addCell(metaPill("PAYMENT DATE", formatDate(payment.getPaymentDate()), palette.textMain(), palette));
-        table.addCell(metaPill("PAYMENT MODE", payment.getPaymentMode() == PaymentMode.UPI ? "UPI" : "Cash", palette.textMain(), palette));
-        table.addCell(metaPill("STATUS", palette.statusBadge(), palette.accentDark(), palette));
-
-        return table;
-    }
-
-    private PdfPCell metaPill(String label, String value, Color valueColor, ReceiptPalette palette) {
+    // =========================================================================
+    // Common PDF Components Helpers
+    // =========================================================================
+    private PdfPCell metaCell(String label, String value, Color valueColor, Color bg, Color border) {
         PdfPCell cell = new PdfPCell();
-        cell.setBackgroundColor(palette.bgPanel());
-        cell.setBorder(Rectangle.TOP | Rectangle.BOTTOM);
-        cell.setBorderColor(palette.borderLine());
-        cell.setBorderWidth(0.75f);
+        cell.setBackgroundColor(bg);
+        cell.setBorder(Rectangle.BOX);
+        cell.setBorderColor(border);
+        cell.setBorderWidth(0.5f);
         cell.setPaddingTop(3.5f);
         cell.setPaddingBottom(3.5f);
         cell.setPaddingLeft(5);
         cell.setPaddingRight(5);
 
-        Paragraph lbl = new Paragraph(label, font(5.5f, Font.BOLD, palette.textMuted()));
+        Paragraph lbl = new Paragraph(label, font(5.5f, Font.BOLD, ANDR_MUTED));
         lbl.setLeading(7);
         cell.addElement(lbl);
 
@@ -298,132 +589,66 @@ public class ReceiptService {
         return cell;
     }
 
-    private PdfPTable memberAndScheduleCards(Member member, Payment payment, ReceiptPalette palette) throws DocumentException {
-        PdfPTable table = new PdfPTable(new float[]{1.15f, 1.0f});
-        table.setWidthPercentage(100);
-
-        // Left Card: Member Details
-        PdfPCell leftCard = new PdfPCell();
-        leftCard.setBackgroundColor(palette.bgPanel());
-        leftCard.setBorder(Rectangle.BOX);
-        leftCard.setBorderColor(palette.borderLine());
-        leftCard.setBorderWidth(0.5f);
-        leftCard.setPadding(6);
-
-        Paragraph cardTitle1 = new Paragraph("MEMBER / STUDENT DETAILS", font(6.5f, Font.BOLD, palette.brandSecondary()));
-        cardTitle1.setLeading(8);
-        leftCard.addElement(cardTitle1);
-
-        Paragraph name = new Paragraph(member.getFullName(), font(9.5f, Font.BOLD, palette.textMain()));
-        name.setLeading(11.5f);
-        name.setSpacingBefore(2);
-        leftCard.addElement(name);
-
-        Paragraph phone = new Paragraph("Phone: " + member.getPhone(), font(7f, Font.NORMAL, palette.textMuted()));
-        phone.setLeading(9);
-        leftCard.addElement(phone);
-
-        Paragraph plan = new Paragraph("Plan: " + member.getPlanName() + " (" + member.getPlanDurationDays() + " days)", font(7.5f, Font.BOLD, palette.brandPrimary()));
-        plan.setLeading(9.5f);
-        plan.setSpacingBefore(2);
-        leftCard.addElement(plan);
-
-        table.addCell(leftCard);
-
-        // Right Card: Membership Validity & Schedule
-        PdfPCell rightCard = new PdfPCell();
-        rightCard.setBackgroundColor(palette.bgPanel());
-        rightCard.setBorder(Rectangle.BOX);
-        rightCard.setBorderColor(palette.borderLine());
-        rightCard.setBorderWidth(0.5f);
-        rightCard.setPadding(6);
-
-        Paragraph cardTitle2 = new Paragraph("MEMBERSHIP VALIDITY & ACCESS", font(6.5f, Font.BOLD, palette.brandSecondary()));
-        cardTitle2.setLeading(8);
-        rightCard.addElement(cardTitle2);
-
-        Paragraph validityRange = new Paragraph("Renewal Validity: " + formatDate(payment.getPaymentDate()) + " to " + formatDate(payment.getNewExpiryDate()), font(7f, Font.NORMAL, palette.textMain()));
-        validityRange.setLeading(9);
-        validityRange.setSpacingBefore(2);
-        rightCard.addElement(validityRange);
-
-        Paragraph renewedBadge = new Paragraph("MEMBERSHIP RENEWED UNTIL:\n" + formatDate(payment.getNewExpiryDate()), font(8f, Font.BOLD, palette.accentDark()));
-        renewedBadge.setLeading(10);
-        renewedBadge.setSpacingBefore(2);
-        rightCard.addElement(renewedBadge);
-
-        Paragraph facility = new Paragraph("Desk check-in & training access authorized", font(6.5f, Font.ITALIC, palette.textMuted()));
-        facility.setLeading(8.5f);
-        facility.setSpacingBefore(1);
-        rightCard.addElement(facility);
-
-        table.addCell(rightCard);
-
-        return table;
-    }
-
-    private PdfPTable lineItems(Tenant tenant, Member member, Payment payment, ReceiptPalette palette) throws DocumentException {
+    private PdfPTable createItemsTable(Tenant tenant, Member member, Payment payment,
+                                       Color headerBg, Color lineBorder, Color discColor, Color discBg) throws DocumentException {
         PdfPTable table = new PdfPTable(new float[]{0.35f, 2.3f, 0.85f, 1.1f});
         table.setWidthPercentage(100);
 
-        // Header Row
-        table.addCell(tableHeaderCell("#", Element.ALIGN_CENTER, palette));
-        table.addCell(tableHeaderCell("FEE PARTICULARS / PROGRAM DESCRIPTION", Element.ALIGN_LEFT, palette));
-        table.addCell(tableHeaderCell("DURATION", Element.ALIGN_CENTER, palette));
-        table.addCell(tableHeaderCell("AMOUNT", Element.ALIGN_RIGHT, palette));
+        table.addCell(tableHeaderCell("#", Element.ALIGN_CENTER, headerBg));
+        table.addCell(tableHeaderCell("FEE PARTICULARS / PROGRAM DESCRIPTION", Element.ALIGN_LEFT, headerBg));
+        table.addCell(tableHeaderCell("DURATION", Element.ALIGN_CENTER, headerBg));
+        table.addCell(tableHeaderCell("AMOUNT", Element.ALIGN_RIGHT, headerBg));
 
-        // Line Item 1: Base Membership / Tuition
-        table.addCell(tableDataCell("1", font(7.5f, Font.NORMAL, palette.textMuted()), Element.ALIGN_CENTER, Color.WHITE, palette));
+        table.addCell(tableDataCell("1", font(7.5f, Font.NORMAL, ANDR_MUTED), Element.ALIGN_CENTER, Color.WHITE, lineBorder));
 
         PdfPCell descCell = new PdfPCell();
         descCell.setBackgroundColor(Color.WHITE);
         descCell.setBorder(Rectangle.BOTTOM);
-        descCell.setBorderColor(palette.borderLine());
+        descCell.setBorderColor(lineBorder);
         descCell.setPaddingTop(4);
         descCell.setPaddingBottom(4);
         descCell.setPaddingLeft(5);
         descCell.setPaddingRight(5);
-        Paragraph itemTitle = new Paragraph(member.getPlanName() + " (Membership / Tuition Fee)", font(7.5f, Font.BOLD, palette.textMain()));
+        Paragraph itemTitle = new Paragraph(member.getPlanName() + " (Membership / Tuition Fee)", font(7.5f, Font.BOLD, ANDR_TEXT));
         itemTitle.setLeading(9);
         descCell.addElement(itemTitle);
-        Paragraph itemSub = new Paragraph("Renewal validity through " + formatDate(payment.getNewExpiryDate()), font(6.5f, Font.NORMAL, palette.textMuted()));
+        Paragraph itemSub = new Paragraph("Renewal validity through " + formatDate(payment.getNewExpiryDate()), font(6.5f, Font.NORMAL, ANDR_MUTED));
         itemSub.setLeading(8);
         descCell.addElement(itemSub);
         table.addCell(descCell);
 
-        table.addCell(tableDataCell(member.getPlanDurationDays() + " Days", font(7.5f, Font.NORMAL, palette.textMain()), Element.ALIGN_CENTER, Color.WHITE, palette));
-        table.addCell(tableDataCell(money(tenant, member.getPlanAmount()), font(7.5f, Font.BOLD, palette.textMain()), Element.ALIGN_RIGHT, Color.WHITE, palette));
+        table.addCell(tableDataCell(member.getPlanDurationDays() + " Days", font(7.5f, Font.NORMAL, ANDR_TEXT), Element.ALIGN_CENTER, Color.WHITE, lineBorder));
+        table.addCell(tableDataCell(money(tenant, member.getPlanAmount()), font(7.5f, Font.BOLD, ANDR_TEXT), Element.ALIGN_RIGHT, Color.WHITE, lineBorder));
 
-        // Line Item 2: Promotion Discount if any
         if (payment.getDiscountAmount() != null && payment.getDiscountAmount().signum() > 0) {
-            table.addCell(tableDataCell("2", font(7.5f, Font.NORMAL, palette.accentDark()), Element.ALIGN_CENTER, palette.accentBg(), palette));
+            table.addCell(tableDataCell("2", font(7.5f, Font.NORMAL, discColor), Element.ALIGN_CENTER, discBg, lineBorder));
 
             PdfPCell discDescCell = new PdfPCell();
-            discDescCell.setBackgroundColor(palette.accentBg());
+            discDescCell.setBackgroundColor(discBg);
             discDescCell.setBorder(Rectangle.BOTTOM);
-            discDescCell.setBorderColor(palette.borderLine());
+            discDescCell.setBorderColor(lineBorder);
             discDescCell.setPaddingTop(4);
             discDescCell.setPaddingBottom(4);
             discDescCell.setPaddingLeft(5);
             discDescCell.setPaddingRight(5);
-            Paragraph discTitle = new Paragraph("Promotion discount / Special waiver", font(7.5f, Font.BOLD, palette.accentDark()));
+            Paragraph discTitle = new Paragraph("Promotion discount / Special waiver", font(7.5f, Font.BOLD, discColor));
             discTitle.setLeading(9);
             discDescCell.addElement(discTitle);
-            Paragraph discSub = new Paragraph("Special promotional offer discount applied", font(6.5f, Font.NORMAL, palette.textMuted()));
+            Paragraph discSub = new Paragraph("Special promotional offer discount applied", font(6.5f, Font.NORMAL, ANDR_MUTED));
             discSub.setLeading(8);
             discDescCell.addElement(discSub);
             table.addCell(discDescCell);
 
-            table.addCell(tableDataCell("—", font(7.5f, Font.NORMAL, palette.accentDark()), Element.ALIGN_CENTER, palette.accentBg(), palette));
-            table.addCell(tableDataCell("- " + money(tenant, payment.getDiscountAmount()), font(7.5f, Font.BOLD, palette.accentDark()), Element.ALIGN_RIGHT, palette.accentBg(), palette));
+            table.addCell(tableDataCell("—", font(7.5f, Font.NORMAL, discColor), Element.ALIGN_CENTER, discBg, lineBorder));
+            table.addCell(tableDataCell("- " + money(tenant, payment.getDiscountAmount()), font(7.5f, Font.BOLD, discColor), Element.ALIGN_RIGHT, discBg, lineBorder));
         }
 
         return table;
     }
 
-    private PdfPCell tableHeaderCell(String text, int align, ReceiptPalette palette) {
+    private PdfPCell tableHeaderCell(String text, int align, Color bg) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font(6.5f, Font.BOLD, Color.WHITE)));
-        cell.setBackgroundColor(palette.brandPrimary());
+        cell.setBackgroundColor(bg);
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setPaddingTop(4);
         cell.setPaddingBottom(4);
@@ -434,11 +659,11 @@ public class ReceiptService {
         return cell;
     }
 
-    private PdfPCell tableDataCell(String text, Font f, int align, Color bg, ReceiptPalette palette) {
+    private PdfPCell tableDataCell(String text, Font f, int align, Color bg, Color border) {
         PdfPCell cell = new PdfPCell(new Phrase(text, f));
         cell.setBackgroundColor(bg);
         cell.setBorder(Rectangle.BOTTOM);
-        cell.setBorderColor(palette.borderLine());
+        cell.setBorderColor(border);
         cell.setPaddingTop(4);
         cell.setPaddingBottom(4);
         cell.setPaddingLeft(5);
@@ -448,43 +673,41 @@ public class ReceiptService {
         return cell;
     }
 
-    private PdfPTable amountPanel(Tenant tenant, Member member, Payment payment, ReceiptPalette palette) throws DocumentException {
+    private PdfPTable createAmountPanel(Tenant tenant, Member member, Payment payment,
+                                        Color bgPanel, Color lineBorder, Color titleColor, Color bannerBg, Color statusColor) throws DocumentException {
         PdfPTable panel = new PdfPTable(new float[]{1.3f, 1.5f});
         panel.setWidthPercentage(100);
 
-        // Left: Payment Mode & Billing Classification
         PdfPCell left = new PdfPCell();
-        left.setBackgroundColor(palette.bgPanel());
+        left.setBackgroundColor(bgPanel);
         left.setBorder(Rectangle.BOX);
-        left.setBorderColor(palette.borderLine());
+        left.setBorderColor(lineBorder);
         left.setBorderWidth(0.5f);
         left.setPadding(6);
 
-        Paragraph modeTitle = new Paragraph("PAYMENT METHOD & DETAILS", font(6.5f, Font.BOLD, palette.brandSecondary()));
+        Paragraph modeTitle = new Paragraph("PAYMENT METHOD & DETAILS", font(6.5f, Font.BOLD, titleColor));
         modeTitle.setLeading(8);
         left.addElement(modeTitle);
 
         String modeText = payment.getPaymentMode() == PaymentMode.UPI ? "UPI / Online Payment" : "Cash Payment";
-        Paragraph mode = new Paragraph("Payment Mode: " + modeText, font(7.5f, Font.BOLD, palette.textMain()));
+        Paragraph mode = new Paragraph("Payment Mode: " + modeText, font(7.5f, Font.BOLD, ANDR_TEXT));
         mode.setLeading(9.5f);
         mode.setSpacingBefore(1.5f);
         left.addElement(mode);
 
         if (payment.getPaymentMode() == PaymentMode.UPI && tenant.getUpiId() != null && !tenant.getUpiId().isBlank()) {
-            Paragraph upi = new Paragraph("Destination UPI: " + tenant.getUpiId(), font(7f, Font.NORMAL, palette.textMuted()));
+            Paragraph upi = new Paragraph("Destination UPI: " + tenant.getUpiId(), font(7f, Font.NORMAL, ANDR_MUTED));
             upi.setLeading(9);
             left.addElement(upi);
         }
 
-        Paragraph type = new Paragraph("Billing: Member Plan Renewal / Tuition", font(6.5f, Font.ITALIC, palette.textMuted()));
+        Paragraph type = new Paragraph("Billing: Member Plan Renewal / Tuition", font(6.5f, Font.ITALIC, ANDR_MUTED));
         type.setLeading(8.5f);
         left.addElement(type);
-
         panel.addCell(left);
 
-        // Right: Total Amount Banner
         PdfPCell right = new PdfPCell();
-        right.setBackgroundColor(palette.brandPrimary());
+        right.setBackgroundColor(bannerBg);
         right.setBorder(Rectangle.NO_BORDER);
         right.setPadding(7);
         right.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -498,28 +721,27 @@ public class ReceiptService {
         amt.setSpacingBefore(1f);
         right.addElement(amt);
 
-        Paragraph status = new Paragraph("✓ PAYMENT RECEIVED · PAID IN FULL", font(6.5f, Font.BOLD, palette.accentBorder()));
+        Paragraph status = new Paragraph("✓ PAYMENT RECEIVED · PAID IN FULL", font(6.5f, Font.BOLD, statusColor));
         status.setLeading(8f);
         status.setSpacingBefore(2f);
         right.addElement(status);
 
         panel.addCell(right);
-
         return panel;
     }
 
-    private PdfPTable termsAndRegulations(Payment payment, ReceiptPalette palette) throws DocumentException {
+    private PdfPTable createTerms(Payment payment, Color bg, Color border, Color textMuted) {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
 
         PdfPCell cell = new PdfPCell();
-        cell.setBackgroundColor(palette.bgPanel());
+        cell.setBackgroundColor(bg);
         cell.setBorder(Rectangle.BOX);
-        cell.setBorderColor(palette.borderLine());
+        cell.setBorderColor(border);
         cell.setBorderWidth(0.5f);
-        cell.setPadding(5);
+        cell.setPadding(4.5f);
 
-        Paragraph head = new Paragraph("STANDARD GYM & COACHING CENTER REGULATIONS:", font(6f, Font.BOLD, palette.textMuted()));
+        Paragraph head = new Paragraph("STANDARD GYM & COACHING CENTER REGULATIONS:", font(6f, Font.BOLD, textMuted));
         head.setLeading(7.5f);
         cell.addElement(head);
 
@@ -527,83 +749,86 @@ public class ReceiptService {
                 "2. Desk Verification: Present this digital receipt or registered mobile at the center desk for check-in.\n" +
                 "3. Validity Notice: Membership & batch access is active strictly until " + formatDate(payment.getNewExpiryDate()) + ". Please renew in advance.\n" +
                 "4. Discipline: Members/students must adhere to center schedule, safety norms, and facility etiquette.";
-        Paragraph body = new Paragraph(terms, font(5.8f, Font.NORMAL, palette.textMuted()));
-        body.setLeading(7.2f);
-        body.setSpacingBefore(1.5f);
+        Paragraph body = new Paragraph(terms, font(5.6f, Font.NORMAL, textMuted));
+        body.setLeading(7f);
+        body.setSpacingBefore(1f);
         cell.addElement(body);
 
         table.addCell(cell);
         return table;
     }
 
-    private PdfPTable signatoryBlock(Tenant tenant, ReceiptPalette palette) throws DocumentException {
+    private PdfPTable createSignatory(Tenant tenant, Color titleColor, Color textMuted,
+                                      Color nameColor, Color stampColor, String digitalTitle) {
         PdfPTable table = new PdfPTable(new float[]{1.7f, 1.3f});
         table.setWidthPercentage(100);
 
-        // Left: Digital Generation Note
         PdfPCell left = new PdfPCell();
         left.setBorder(Rectangle.NO_BORDER);
         left.setPadding(4);
 
-        Paragraph digitalNote = new Paragraph(palette.verifiedTitle(), font(6.5f, Font.BOLD, palette.brandSecondary()));
+        Paragraph digitalNote = new Paragraph(digitalTitle, font(6.5f, Font.BOLD, titleColor));
         digitalNote.setLeading(8);
         left.addElement(digitalNote);
 
-        Paragraph genNotice = new Paragraph("Issued on behalf of " + tenant.getBusinessName() + ".\nThis is a computer-generated payment receipt; no signature is required.", font(6f, Font.ITALIC, palette.textMuted()));
+        Paragraph genNotice = new Paragraph("Issued on behalf of " + tenant.getBusinessName() + ".\nThis is a computer-generated payment receipt; no signature is required.", font(6f, Font.ITALIC, textMuted));
         genNotice.setLeading(7.5f);
         left.addElement(genNotice);
-
         table.addCell(left);
 
-        // Right: Official Desk Validation Stamp Box
         PdfPCell right = new PdfPCell();
         right.setBackgroundColor(Color.WHITE);
         right.setBorder(Rectangle.BOX);
         right.setBorderColor(new Color(148, 163, 184));
         right.setBorderWidth(0.75f);
-        right.setPadding(4);
+        right.setPadding(3.5f);
         right.setHorizontalAlignment(Element.ALIGN_CENTER);
 
-        Paragraph centerName = new Paragraph(tenant.getBusinessName().toUpperCase(Locale.ENGLISH), font(6f, Font.BOLD, palette.brandPrimary()));
+        Paragraph centerName = new Paragraph(tenant.getBusinessName().toUpperCase(Locale.ENGLISH), font(6f, Font.BOLD, nameColor));
         centerName.setAlignment(Element.ALIGN_CENTER);
         centerName.setLeading(7.5f);
         right.addElement(centerName);
 
-        Paragraph stampText = new Paragraph("DESK VERIFIED & RECORDED", font(6.5f, Font.BOLD, palette.accentDark()));
+        Paragraph stampText = new Paragraph("DESK VERIFIED & RECORDED", font(6.5f, Font.BOLD, stampColor));
         stampText.setAlignment(Element.ALIGN_CENTER);
         stampText.setLeading(8f);
         right.addElement(stampText);
 
-        Paragraph authSig = new Paragraph("Authorized Signatory", font(5.5f, Font.ITALIC, palette.textMuted()));
+        Paragraph authSig = new Paragraph("Authorized Signatory", font(5.5f, Font.ITALIC, textMuted));
         authSig.setAlignment(Element.ALIGN_CENTER);
         authSig.setLeading(7f);
         right.addElement(authSig);
-
         table.addCell(right);
 
         return table;
     }
 
-    private PdfPTable footer(Tenant tenant, ReceiptPalette palette) throws DocumentException {
+    private PdfPTable createFooter(Tenant tenant, Color borderLine, Color textMuted, String editionName) {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
 
         String footerText = "Thank you for your payment, " + tenant.getBusinessName() +
                 ".  |  Helpline: " + tenant.getPhone() +
                 (tenant.getUpiId() != null && !tenant.getUpiId().isBlank() ? "  |  UPI: " + tenant.getUpiId() : "") +
-                "  |  Powered by FeeKeeper · " + palette.galaxyName() + " Edition";
+                "  |  Powered by FeeKeeper · " + editionName;
 
-        PdfPCell cell = new PdfPCell(new Phrase(footerText, font(6f, Font.NORMAL, palette.textMuted())));
+        PdfPCell cell = new PdfPCell(new Phrase(footerText, font(5.8f, Font.NORMAL, textMuted)));
         cell.setBackgroundColor(Color.WHITE);
         cell.setBorder(Rectangle.TOP);
-        cell.setBorderColor(palette.borderLine());
+        cell.setBorderColor(borderLine);
         cell.setBorderWidth(0.5f);
         cell.setPaddingTop(3);
-        cell.setPaddingBottom(2);
+        cell.setPaddingBottom(1);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
 
         table.addCell(cell);
         return table;
+    }
+
+    private Paragraph spacer(float height) {
+        Paragraph p = new Paragraph(" ", font(height, Font.NORMAL, ANDR_MUTED));
+        p.setLeading(height);
+        return p;
     }
 
     private String money(Tenant tenant, java.math.BigDecimal amount) {
@@ -619,40 +844,134 @@ public class ReceiptService {
         return DATE.format(date);
     }
 
+    // =========================================================================
+    // PAGE FRAME EVENT HELPERS (Custom Styling for Each Galaxy Theme)
+    // =========================================================================
+
     /**
-     * Page frame event helper to add top decorative branding accent and outer certificate border per Galaxy theme.
+     * Andromeda Page Frame: Classical institutional double border with formal Navy & Emerald header stripe.
      */
-    private static class ReceiptPageFrame extends PdfPageEventHelper {
-        private final ReceiptPalette palette;
-
-        public ReceiptPageFrame(ReceiptPalette palette) {
-            this.palette = palette;
-        }
-
+    private static class AndromedaPageFrame extends PdfPageEventHelper {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             PdfContentByte cb = writer.getDirectContentUnder();
             float width = document.getPageSize().getWidth();
             float height = document.getPageSize().getHeight();
 
-            // 1. Top brand accent bar: Primary header bar with accent highlight
-            cb.setColorFill(palette.brandPrimary());
+            cb.setColorFill(ANDR_NAVY);
             cb.rectangle(0, height - 5f, width, 5f);
             cb.fill();
 
-            cb.setColorFill(palette.accentDark());
+            cb.setColorFill(ANDR_EMERALD);
             cb.rectangle(0, height - 7f, 130f, 2f);
             cb.fill();
 
-            // 2. Elegant certificate framing border
-            cb.setColorStroke(palette.borderLine());
+            cb.setColorStroke(ANDR_LINE);
             cb.setLineWidth(0.75f);
             cb.roundRectangle(10f, 10f, width - 20f, height - 20f, 4f);
             cb.stroke();
 
-            // 3. Subtle bottom accent line
-            cb.setColorFill(palette.bgHeader());
+            cb.setColorFill(ANDR_HEADER);
             cb.rectangle(10f, 10f, width - 20f, 2f);
+            cb.fill();
+        }
+    }
+
+    /**
+     * Nebula Page Frame: High-tech cyber geometric border with 4 corner tick brackets and neon cyan accent line.
+     */
+    private static class NebulaPageFrame extends PdfPageEventHelper {
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContentUnder();
+            float width = document.getPageSize().getWidth();
+            float height = document.getPageSize().getHeight();
+
+            // Top Cyan & Violet Cyber Accent
+            cb.setColorFill(NEB_DARK);
+            cb.rectangle(0, height - 5f, width, 5f);
+            cb.fill();
+
+            cb.setColorFill(NEB_CYAN);
+            cb.rectangle(0, height - 7f, width, 2f);
+            cb.fill();
+
+            // Outer Lavender Cyber Border
+            cb.setColorStroke(NEB_LINE);
+            cb.setLineWidth(1f);
+            cb.roundRectangle(8f, 8f, width - 16f, height - 16f, 6f);
+            cb.stroke();
+
+            // 4 Futuristic Corner Bracket Ticks
+            cb.setColorStroke(NEB_CYAN);
+            cb.setLineWidth(1.5f);
+
+            // Top-Left corner
+            cb.moveTo(12f, height - 20f); cb.lineTo(12f, height - 12f); cb.lineTo(20f, height - 12f); cb.stroke();
+            // Top-Right corner
+            cb.moveTo(width - 20f, height - 12f); cb.lineTo(width - 12f, height - 12f); cb.lineTo(width - 12f, height - 20f); cb.stroke();
+            // Bottom-Left corner
+            cb.moveTo(12f, 20f); cb.lineTo(12f, 12f); cb.lineTo(20f, 12f); cb.stroke();
+            // Bottom-Right corner
+            cb.moveTo(width - 20f, 12f); cb.lineTo(width - 12f, 12f); cb.lineTo(width - 12f, 20f); cb.stroke();
+
+            // Bottom Neon Accent Bar
+            cb.setColorFill(NEB_PURPLE);
+            cb.rectangle(8f, 8f, width - 16f, 2f);
+            cb.fill();
+        }
+    }
+
+    /**
+     * Milky Way Page Frame: Luxury Gold Double Hairline Border with 4 Diamond/Star Corner Motifs.
+     */
+    private static class MilkyWayPageFrame extends PdfPageEventHelper {
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContentUnder();
+            float width = document.getPageSize().getWidth();
+            float height = document.getPageSize().getHeight();
+
+            // Top Gold Starlight Ribbon
+            cb.setColorFill(MW_OBSIDIAN);
+            cb.rectangle(0, height - 4f, width, 4f);
+            cb.fill();
+
+            cb.setColorFill(MW_GOLD);
+            cb.rectangle(0, height - 6f, width, 2f);
+            cb.fill();
+
+            // Outer Gold Frame
+            cb.setColorStroke(MW_GOLD_BORDER);
+            cb.setLineWidth(0.75f);
+            cb.rectangle(9f, 9f, width - 18f, height - 18f);
+            cb.stroke();
+
+            // Inner Fine Gold Hairline
+            cb.setColorStroke(new Color(254, 243, 199));
+            cb.setLineWidth(0.5f);
+            cb.rectangle(12f, 12f, width - 24f, height - 24f);
+            cb.stroke();
+
+            // 4 Gold Corner Stars (diamonds)
+            cb.setColorFill(MW_GOLD);
+            drawDiamond(cb, 10.5f, height - 10.5f, 2f);
+            drawDiamond(cb, width - 10.5f, height - 10.5f, 2f);
+            drawDiamond(cb, 10.5f, 10.5f, 2f);
+            drawDiamond(cb, width - 10.5f, 10.5f, 2f);
+
+            // Bottom Amber Bar
+            cb.setColorFill(MW_GOLD_BG);
+            cb.rectangle(9f, 9f, width - 18f, 2f);
+            cb.fill();
+        }
+
+        private void drawDiamond(PdfContentByte cb, float cx, float cy, float r) {
+            cb.moveTo(cx, cy + r);
+            cb.lineTo(cx + r, cy);
+            cb.lineTo(cx, cy - r);
+            cb.lineTo(cx - r, cy);
+            cb.closePath();
             cb.fill();
         }
     }

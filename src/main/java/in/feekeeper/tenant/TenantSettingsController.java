@@ -25,4 +25,10 @@ public class TenantSettingsController {
     public TenantSettingsResponse update(@Valid @RequestBody TenantSettingsRequest request) {
         return service.update(request);
     }
+
+    @PostMapping("/unlock-theme")
+    @Operation(summary = "Unlock a premium receipt design for +₹30 design fee")
+    public TenantSettingsResponse unlockTheme(@RequestParam String theme) {
+        return service.unlockTheme(theme);
+    }
 }

@@ -7,6 +7,42 @@ document.addEventListener('DOMContentLoaded', function () {
     const phonePattern = /^(?:\+91)?[6-9]\d{9}$/;
     const upiPattern = /^[A-Za-z0-9._-]+@[A-Za-z][A-Za-z0-9.-]+$/;
 
+    // Theme selector cards logic
+    const themeCards = document.querySelectorAll('.theme-card');
+    themeCards.forEach(function (card) {
+        card.addEventListener('click', function () {
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                updateThemeCards(radio.value);
+            }
+        });
+    });
+
+    function updateThemeCards(selectedValue) {
+        themeCards.forEach(function (c) {
+            const isMatch = c.getAttribute('data-theme') === selectedValue;
+            const status = c.querySelector('.theme-status');
+            if (isMatch) {
+                c.classList.remove('border-slate-200', 'bg-white');
+                c.classList.add('border-indigo-600', 'bg-indigo-50/40', 'shadow-xs');
+                if (status) {
+                    status.textContent = 'Selected ✓';
+                    status.classList.remove('text-slate-400');
+                    status.classList.add('text-indigo-600');
+                }
+            } else {
+                c.classList.remove('border-indigo-600', 'bg-indigo-50/40', 'shadow-xs');
+                c.classList.add('border-slate-200', 'bg-white');
+                if (status) {
+                    status.textContent = 'Select';
+                    status.classList.remove('text-indigo-600');
+                    status.classList.add('text-slate-400');
+                }
+            }
+        });
+    }
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
         FeeKeeperApi.clearFieldErrors(form);
@@ -32,10 +68,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function values() {
+        const checkedTheme = form.querySelector('input[name="receiptTheme"]:checked');
         return {
             businessName: form.businessName.value.trim(), ownerName: form.ownerName.value.trim(),
             phone: form.phone.value.trim(), upiId: form.upiId.value.trim() || null,
-            email: form.email.value.trim(), password: form.password.value
+            email: form.email.value.trim(), password: form.password.value,
+            receiptTheme: checkedTheme ? checkedTheme.value : 'ANDROMEDA'
         };
     }
     function validate(value) {

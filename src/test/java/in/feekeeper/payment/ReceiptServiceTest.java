@@ -96,4 +96,64 @@ class ReceiptServiceTest {
                 "Quarterly Gym & Cardio", "INR 700.00", "INR 650.00", "Cash", "20 Feb 2027",
                 "Promotion discount");
     }
+
+    @Test
+    void createsNebulaGalaxyReceiptWithCosmicBranding() throws Exception {
+        UUID tenantId = UUID.randomUUID();
+        UUID paymentId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
+                new AuthenticatedUser(UUID.randomUUID(), tenantId, "nebula@example.in", UserRole.OWNER), "", null));
+        Payment payment = new Payment(tenantId, memberId, new BigDecimal("1200.00"), PaymentMode.UPI,
+                LocalDate.of(2026, 11, 21), "FK-2026-000088", "nebula-receipt-test",
+                LocalDate.of(2027, 5, 21), Instant.parse("2026-11-21T10:00:00Z"));
+        Member member = new Member(tenantId, "Arjun Kapoor", "+919876501234", "CrossFit Half-Yearly",
+                new BigDecimal("1200.00"), 180, LocalDate.of(2026, 11, 21), LocalDate.of(2026, 11, 21),
+                MemberStatus.ACTIVE, Instant.parse("2026-11-21T10:00:00Z"));
+        Tenant tenant = new Tenant("Cosmic Nebula Athletic Club", "Karan Johar", "+919899001122",
+                "nebula@upi", "NEBULA", Instant.parse("2026-01-01T00:00:00Z"));
+        when(payments.findByIdAndTenantId(paymentId, tenantId)).thenReturn(Optional.of(payment));
+        when(members.findByIdAndTenantId(memberId, tenantId)).thenReturn(Optional.of(member));
+        when(tenants.findById(tenantId)).thenReturn(Optional.of(tenant));
+
+        byte[] pdf = new ReceiptService(payments, members, tenants).createPdf(paymentId);
+        PdfReader reader = new PdfReader(pdf);
+        int pageCount = reader.getNumberOfPages();
+        String text = new PdfTextExtractor(reader).getTextFromPage(1);
+        reader.close();
+
+        assertThat(pageCount).isEqualTo(1);
+        assertThat(text).contains("Cosmic Nebula Athletic Club", "NEBULA", "PAID IN FULL", "FK-2026-000088",
+                "Arjun Kapoor", "CrossFit Half-Yearly", "INR 1200.00", "21 May 2027", "Nebula Edition");
+    }
+
+    @Test
+    void createsMilkyWayGalaxyReceiptWithStarlightBranding() throws Exception {
+        UUID tenantId = UUID.randomUUID();
+        UUID paymentId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
+                new AuthenticatedUser(UUID.randomUUID(), tenantId, "milkyway@example.in", UserRole.OWNER), "", null));
+        Payment payment = new Payment(tenantId, memberId, new BigDecimal("2500.00"), PaymentMode.UPI,
+                LocalDate.of(2026, 11, 21), "FK-2026-000099", "milkyway-receipt-test",
+                LocalDate.of(2027, 11, 21), Instant.parse("2026-11-21T10:00:00Z"));
+        Member member = new Member(tenantId, "Meera Rajput", "+919811998877", "Annual Elite Martial Arts",
+                new BigDecimal("2500.00"), 365, LocalDate.of(2026, 11, 21), LocalDate.of(2026, 11, 21),
+                MemberStatus.ACTIVE, Instant.parse("2026-11-21T10:00:00Z"));
+        Tenant tenant = new Tenant("Milky Way Elite Dojo", "Siddharth Roy", "+919877665544",
+                "milkyway@okaxis", "MILKY_WAY", Instant.parse("2026-01-01T00:00:00Z"));
+        when(payments.findByIdAndTenantId(paymentId, tenantId)).thenReturn(Optional.of(payment));
+        when(members.findByIdAndTenantId(memberId, tenantId)).thenReturn(Optional.of(member));
+        when(tenants.findById(tenantId)).thenReturn(Optional.of(tenant));
+
+        byte[] pdf = new ReceiptService(payments, members, tenants).createPdf(paymentId);
+        PdfReader reader = new PdfReader(pdf);
+        int pageCount = reader.getNumberOfPages();
+        String text = new PdfTextExtractor(reader).getTextFromPage(1);
+        reader.close();
+
+        assertThat(pageCount).isEqualTo(1);
+        assertThat(text).contains("Milky Way Elite Dojo", "MILKY WAY", "PAID IN FULL", "FK-2026-000099",
+                "Meera Rajput", "Annual Elite Martial Arts", "INR 2500.00", "21 Nov 2027", "FeeKeeper Milky Way");
+    }
 }

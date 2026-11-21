@@ -35,7 +35,8 @@ public class AuthService {
             throw new ConflictException("EMAIL_ALREADY_REGISTERED", "An account with this email already exists");
         }
         Tenant tenant = tenantRepository.save(new Tenant(request.businessName().trim(), request.ownerName().trim(),
-                normalizePhone(request.phone()), trimToNull(request.upiId()), clock.instant()));
+                normalizePhone(request.phone()), trimToNull(request.upiId()),
+                request.receiptTheme() == null ? "ANDROMEDA" : request.receiptTheme(), clock.instant()));
         AppUser user = userRepository.save(new AppUser(tenant.getId(), email,
                 passwordEncoder.encode(request.password()), UserRole.OWNER, clock.instant()));
         return responseFor(user);

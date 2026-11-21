@@ -21,7 +21,8 @@ public class TenantSettingsService {
                 normalizePhone(request.phone()), normalizeUpi(request.upiId()),
                 request.currencyCode()==null?tenant.getCurrencyCode():request.currencyCode(),
                 request.currencySymbol()==null?symbol(request.currencyCode(),tenant.getCurrencySymbol()):request.currencySymbol(),
-                validZone(request.timeZone(),tenant.getTimeZone()));
+                validZone(request.timeZone(),tenant.getTimeZone()),
+                request.receiptTheme()==null?tenant.getReceiptTheme():request.receiptTheme());
         return TenantSettingsResponse.from(tenant);
     }
 

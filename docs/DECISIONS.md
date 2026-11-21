@@ -99,3 +99,14 @@
 - Redesigned the server-generated PDF receipt (`ReceiptService`) to follow standard gym and coaching/tutorial academy receipt conventions on single-page A5 format.
 - Included institute identity branding, official verified stamp badge (`PAID IN FULL`), 4-column metadata ribbon (receipt number, payment date, payment mode, verified status), 2-column cards for member profile and renewed validity schedule, itemized fee particulars table with promotional discounts, net amount panel, standard center regulations/terms (non-refundable policy, desk entry/biometric check-in, batch expiry), and digital authorization seal.
 - Enhanced web payment confirmation modal into a structured digital receipt card with instant preview, print slip, PDF download, and formatted WhatsApp receipt.
+
+## Galaxy Edition Digital Receipts & Onboarding Selection
+
+- Introduced Galaxy-themed digital receipt templates for tenants:
+  1. **Andromeda** (`ANDROMEDA`): Deep Navy & Emerald Green classic prestige layout for institutions and academies, featuring desk verification stamps.
+  2. **Nebula** (`NEBULA`): Cosmic Violet & Neon Cyan high-energy athletic pass layout for modern gyms and sports clubs, featuring cyber check-in token styling.
+  3. **Milky Way** (`MILKY_WAY`): Obsidian Slate & Champagne Gold luxury starlight layout for boutique fitness studios, martial arts academies, and executive clubs.
+- Updated initial registration (`/register` & `RegisterRequest`) to prompt new businesses to choose their preferred Galaxy Digital Receipt theme during onboarding, persisting it to the tenant profile.
+- Allowed tenants to preview and switch receipt themes anytime from `/settings`.
+- Provided interactive Galaxy theme preview tabs directly in the dashboard payment confirmation modal, with customized WhatsApp receipts dynamically formatted to match the active Galaxy style.
+- Enhanced server-side PDF generation (`ReceiptService`) and `V7__add_receipt_theme.sql` migration to dynamically theme downloaded PDFs and print slips based on the tenant's chosen Galaxy styling.

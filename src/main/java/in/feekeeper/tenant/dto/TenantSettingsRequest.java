@@ -9,5 +9,13 @@ public record TenantSettingsRequest(
         @Size(max = 100) @Pattern(regexp = "^[A-Za-z0-9._-]+@[A-Za-z][A-Za-z0-9.-]+$", message = "must be a valid UPI ID") String upiId,
         @Pattern(regexp="^(USD|EUR|GBP|AED|INR)$") String currencyCode,
         @Size(max=8) String currencySymbol,
-        @Size(max=50) String timeZone
-) { public TenantSettingsRequest(String businessName,String ownerName,String phone,String upiId){this(businessName,ownerName,phone,upiId,null,null,null);} }
+        @Size(max=50) String timeZone,
+        @Pattern(regexp="^(ANDROMEDA|NEBULA|MILKY_WAY)$", message = "must be ANDROMEDA, NEBULA, or MILKY_WAY") String receiptTheme
+) {
+    public TenantSettingsRequest(String businessName, String ownerName, String phone, String upiId) {
+        this(businessName, ownerName, phone, upiId, null, null, null, null);
+    }
+    public TenantSettingsRequest(String businessName, String ownerName, String phone, String upiId, String currencyCode, String currencySymbol, String timeZone) {
+        this(businessName, ownerName, phone, upiId, currencyCode, currencySymbol, timeZone, null);
+    }
+}

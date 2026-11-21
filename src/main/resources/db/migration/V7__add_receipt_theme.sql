@@ -1,0 +1,1 @@
+ALTER TABLE tenants ADD COLUMN receipt_theme varchar(50) NOT NULL DEFAULT 'ANDROMEDA';

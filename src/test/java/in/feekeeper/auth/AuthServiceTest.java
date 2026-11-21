@@ -41,6 +41,16 @@ class AuthServiceTest {
         assertThat(response.tenantId()).isEqualTo(user.getValue().getTenantId());
     }
 
+    @Test void registrationWithChosenReceiptThemePreservesGalaxyTheme() {
+        when(encoder.encode("password123")).thenReturn("encoded");
+        AuthResponse response = service.register(new RegisterRequest("Nebula Fitness", "Karan", "9876543210", null,
+                "karan@nebula.com", "password123", "NEBULA"));
+        ArgumentCaptor<Tenant> tenantCaptor = ArgumentCaptor.forClass(Tenant.class);
+        verify(tenants).save(tenantCaptor.capture());
+        assertThat(tenantCaptor.getValue().getReceiptTheme()).isEqualTo("NEBULA");
+        assertThat(response.tenantId()).isEqualTo(tenantCaptor.getValue().getId());
+    }
+
     @Test void registrationRejectsDuplicateEmail() {
         when(users.existsByEmailIgnoreCase("owner@example.com")).thenReturn(true);
         assertThatThrownBy(() -> service.register(new RegisterRequest("Gym", "Owner", "9876543210", null,

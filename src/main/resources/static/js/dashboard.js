@@ -43,8 +43,44 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('offer-form').addEventListener('submit',saveOffer);
     document.getElementById('retry-offers').addEventListener('click',loadOffers);
 
-    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.businessName=s.businessName||'';state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';state.timeZone=s.timeZone||'Asia/Kolkata';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
+    document.querySelectorAll('.receipt-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            switchReceiptTheme(tab.getAttribute('data-target'));
+        });
+    });
+
+    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.businessName=s.businessName||'';state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';state.timeZone=s.timeZone||'Asia/Kolkata';state.receiptTheme=s.receiptTheme||'ANDROMEDA';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
     loadOffers();
+
+    function switchReceiptTheme(targetId) {
+        document.querySelectorAll('.receipt-galaxy-view').forEach(function (view) {
+            if (view.id === targetId) {
+                view.hidden = false;
+                view.classList.remove('hidden');
+            } else {
+                view.hidden = true;
+                view.classList.add('hidden');
+            }
+        });
+        document.querySelectorAll('.receipt-tab').forEach(function (tab) {
+            const isMatch = tab.getAttribute('data-target') === targetId;
+            if (isMatch) {
+                tab.classList.add('bg-white', 'shadow-xs');
+                tab.classList.remove('text-slate-500');
+            } else {
+                tab.classList.remove('bg-white', 'shadow-xs');
+                tab.classList.add('text-slate-500');
+            }
+        });
+        let themeCode = 'ANDROMEDA';
+        if (targetId === 'receipt-ui-nebula') themeCode = 'NEBULA';
+        else if (targetId === 'receipt-ui-milkyway') themeCode = 'MILKY_WAY';
+        state.activeReceiptTheme = themeCode;
+        if (state.payment && state.payment.result && state.payment.member) {
+            const shareLink = document.getElementById('share-receipt');
+            if (shareLink) shareLink.href = receiptWhatsAppUrl(themeCode, state.payment.member, state.payment.result);
+        }
+    }
 
     async function loadSummary() {
         show('summary-loading'); hide('summary-cards'); hide('summary-error');
@@ -244,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function () {
             state.payment.result = result; state.payment.member.expiryDate = result.newExpiryDate; state.payment.member.status = 'ACTIVE';
             renderMembers(Array.from(state.members.values())); loadSummary();
             paymentForm.hidden = true; show('payment-success');
+            // Andromeda Elements
             const bizEl = document.getElementById('receipt-biz-name'); if (bizEl) bizEl.textContent = state.businessName || 'Gym & Academy Desk';
             const numEl = document.getElementById('receipt-number-val'); if (numEl) numEl.textContent = result.receiptNumber;
             const memEl = document.getElementById('receipt-member-val'); if (memEl) memEl.textContent = state.payment.member.fullName;
@@ -251,8 +288,29 @@ document.addEventListener('DOMContentLoaded', function () {
             const modeEl = document.getElementById('receipt-mode-val'); if (modeEl) modeEl.textContent = result.paymentMode === 'UPI' ? 'UPI / Online' : 'Cash Counter';
             const amtEl = document.getElementById('receipt-amount-val'); if (amtEl) amtEl.textContent = money(result.amountPaid);
             const expEl = document.getElementById('receipt-expiry-val'); if (expEl) expEl.textContent = formatDate(result.newExpiryDate);
+
+            // Nebula Elements
+            const nebBiz = document.getElementById('receipt-nebula-biz-name'); if (nebBiz) nebBiz.textContent = state.businessName || 'Gym & Athletic Studio';
+            const nebNum = document.getElementById('receipt-nebula-number-val'); if (nebNum) nebNum.textContent = result.receiptNumber;
+            const nebMem = document.getElementById('receipt-nebula-member-val'); if (nebMem) nebMem.textContent = state.payment.member.fullName;
+            const nebPlan = document.getElementById('receipt-nebula-plan-val'); if (nebPlan) nebPlan.textContent = state.payment.member.planName + ' (' + state.payment.member.planDurationDays + ' days)';
+            const nebMode = document.getElementById('receipt-nebula-mode-val'); if (nebMode) nebMode.textContent = result.paymentMode === 'UPI' ? 'UPI / Direct Gateway' : 'Cash Counter';
+            const nebAmt = document.getElementById('receipt-nebula-amount-val'); if (nebAmt) nebAmt.textContent = money(result.amountPaid);
+            const nebExp = document.getElementById('receipt-nebula-expiry-val'); if (nebExp) nebExp.textContent = formatDate(result.newExpiryDate);
+
+            // Milky Way Elements
+            const mwBiz = document.getElementById('receipt-milkyway-biz-name'); if (mwBiz) mwBiz.textContent = state.businessName || 'Executive Fitness & Martial Arts';
+            const mwNum = document.getElementById('receipt-milkyway-number-val'); if (mwNum) mwNum.textContent = result.receiptNumber;
+            const mwMem = document.getElementById('receipt-milkyway-member-val'); if (mwMem) mwMem.textContent = state.payment.member.fullName;
+            const mwPlan = document.getElementById('receipt-milkyway-plan-val'); if (mwPlan) mwPlan.textContent = state.payment.member.planName + ' (' + state.payment.member.planDurationDays + ' days)';
+            const mwMode = document.getElementById('receipt-milkyway-mode-val'); if (mwMode) mwMode.textContent = result.paymentMode === 'UPI' ? 'UPI / Digital Settlement' : 'Executive Counter';
+            const mwAmt = document.getElementById('receipt-milkyway-amount-val'); if (mwAmt) mwAmt.textContent = money(result.amountPaid);
+            const mwExp = document.getElementById('receipt-milkyway-expiry-val'); if (mwExp) mwExp.textContent = formatDate(result.newExpiryDate);
+
             document.getElementById('payment-success-detail').textContent = result.receiptNumber + ' · New expiry ' + formatDate(result.newExpiryDate);
-            document.getElementById('share-receipt').href = receiptWhatsAppUrl(state.payment.member, result);
+
+            const initialTarget = (state.receiptTheme === 'NEBULA') ? 'receipt-ui-nebula' : ((state.receiptTheme === 'MILKY_WAY') ? 'receipt-ui-milkyway' : 'receipt-ui-andromeda');
+            switchReceiptTheme(initialTarget);
             FeeKeeperApi.showToast('Payment recorded successfully.');
         } catch (error) {
             const box = document.getElementById('payment-error'); box.textContent = error.message; box.hidden = false; box.classList.remove('hidden');
@@ -277,22 +335,53 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) { if (printWindow) printWindow.close(); FeeKeeperApi.showToast(error.message, 'error'); }
     }
 
-    function receiptWhatsAppUrl(member, result) {
+    function receiptWhatsAppUrl(theme, member, result) {
         let digits = member.phone.replace(/\D/g, ''); if (digits.length === 10) digits = '91' + digits;
         const bizName = state.businessName || 'Gym & Coaching Academy';
-        const lines = [
-            '🧾 *OFFICIAL PAYMENT RECEIPT*',
-            '━━━━━━━━━━━━━━━━━━━━━',
-            '🏢 *Center:* ' + bizName,
-            '👤 *Member/Student:* ' + member.fullName,
-            '📄 *Receipt No:* ' + result.receiptNumber,
-            '💳 *Plan:* ' + member.planName + ' (' + member.planDurationDays + ' days)',
-            '💰 *Amount Paid:* ' + money(result.amountPaid) + ' (' + (result.paymentMode || 'Paid') + ')',
-            '📅 *Renewed Validity:* ' + formatDate(result.newExpiryDate),
-            '━━━━━━━━━━━━━━━━━━━━━',
-            '✅ *Status:* Paid in Full · Access Active',
-            'Thank you for your payment! Please retain this receipt for desk entry.'
-        ];
+        let lines;
+        if (theme === 'NEBULA') {
+            lines = [
+                '🌌 *COSMIC NEBULA DIGITAL PASS*',
+                '═════════════════════',
+                '⚡ *Center:* ' + bizName,
+                '👤 *Athlete/Member:* ' + member.fullName,
+                '🎫 *Pass ID:* ' + result.receiptNumber,
+                '🥋 *Program:* ' + member.planName + ' (' + member.planDurationDays + ' days)',
+                '💳 *Settled:* ' + money(result.amountPaid) + ' (' + (result.paymentMode || 'Paid') + ')',
+                '🚀 *Active Until:* ' + formatDate(result.newExpiryDate),
+                '═════════════════════',
+                '★ *Status:* Active & Touchless Access Authorized',
+                'Present this digital pass at the check-in desk.'
+            ];
+        } else if (theme === 'MILKY_WAY') {
+            lines = [
+                '✨ *MILKY WAY STELLAR RECEIPT*',
+                '─────────────────────',
+                '🏛️ *Institution:* ' + bizName,
+                '⭐ *Executive Member:* ' + member.fullName,
+                '✦ *Record No:* ' + result.receiptNumber,
+                '🏅 *Membership:* ' + member.planName + ' (' + member.planDurationDays + ' days)',
+                '💎 *Privileged Investment:* ' + money(result.amountPaid) + ' (' + (result.paymentMode || 'Paid') + ')',
+                '🗓️ *Valid Through:* ' + formatDate(result.newExpiryDate),
+                '─────────────────────',
+                '✦ *Status:* Settled in Full · Privileged VIP Access',
+                'Thank you for your valued patronage.'
+            ];
+        } else {
+            lines = [
+                '🧾 *ANDROMEDA GALAXY RECEIPT*',
+                '━━━━━━━━━━━━━━━━━━━━━',
+                '🏢 *Center:* ' + bizName,
+                '👤 *Member/Student:* ' + member.fullName,
+                '📄 *Receipt No:* ' + result.receiptNumber,
+                '💳 *Plan:* ' + member.planName + ' (' + member.planDurationDays + ' days)',
+                '💰 *Amount Paid:* ' + money(result.amountPaid) + ' (' + (result.paymentMode || 'Paid') + ')',
+                '📅 *Renewed Validity:* ' + formatDate(result.newExpiryDate),
+                '━━━━━━━━━━━━━━━━━━━━━',
+                '✅ *Status:* Paid in Full · Desk Verified',
+                'Thank you for your payment! Please retain this receipt for center check-in.'
+            ];
+        }
         return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(lines.join('\n'));
     }
 

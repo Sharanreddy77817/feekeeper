@@ -55,12 +55,45 @@ class ReceiptServiceTest {
 
         byte[] pdf = new ReceiptService(payments, members, tenants).createPdf(paymentId);
         PdfReader reader = new PdfReader(pdf);
+        int pageCount = reader.getNumberOfPages();
         String text = new PdfTextExtractor(reader).getTextFromPage(1);
         reader.close();
 
+        assertThat(pageCount).isEqualTo(1);
         assertThat(pdf).startsWith("%PDF-".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
         assertThat(text).contains("Sharma Fitness Institute", "PAYMENT", "RECEIVED", "FK-2026-000001",
                 "Asha Sharma", "Monthly Coaching", "INR 700.00", "UPI", "15 Feb 2027",
                 "sharma@okaxis", "computer-generated payment receipt");
+    }
+
+    @Test
+    void createsReceiptWithPromotionalDiscountItemizedOnSinglePage() throws Exception {
+        UUID tenantId = UUID.randomUUID();
+        UUID paymentId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
+                new AuthenticatedUser(UUID.randomUUID(), tenantId, "gym@example.in", UserRole.OWNER), "", null));
+        Payment payment = new Payment(tenantId, memberId, new BigDecimal("650.00"), PaymentMode.CASH,
+                LocalDate.of(2026, 11, 20), "FK-2026-000042", "discount-receipt-test",
+                LocalDate.of(2027, 2, 20), Instant.parse("2026-11-20T10:00:00Z"), "INR", new BigDecimal("50.00"));
+        Member member = new Member(tenantId, "Vikram Malhotra", "+919811223344", "Quarterly Gym & Cardio",
+                new BigDecimal("700.00"), 90, LocalDate.of(2026, 11, 20), LocalDate.of(2026, 11, 20),
+                MemberStatus.ACTIVE, Instant.parse("2026-11-20T10:00:00Z"));
+        Tenant tenant = new Tenant("PowerFit Gym & Academy", "Rohit Verma", "+919988776655",
+                "powerfit@upi", Instant.parse("2026-01-01T00:00:00Z"));
+        when(payments.findByIdAndTenantId(paymentId, tenantId)).thenReturn(Optional.of(payment));
+        when(members.findByIdAndTenantId(memberId, tenantId)).thenReturn(Optional.of(member));
+        when(tenants.findById(tenantId)).thenReturn(Optional.of(tenant));
+
+        byte[] pdf = new ReceiptService(payments, members, tenants).createPdf(paymentId);
+        PdfReader reader = new PdfReader(pdf);
+        int pageCount = reader.getNumberOfPages();
+        String text = new PdfTextExtractor(reader).getTextFromPage(1);
+        reader.close();
+
+        assertThat(pageCount).isEqualTo(1);
+        assertThat(text).contains("PowerFit Gym & Academy", "FK-2026-000042", "Vikram Malhotra",
+                "Quarterly Gym & Cardio", "INR 700.00", "INR 650.00", "Cash", "20 Feb 2027",
+                "Promotion discount");
     }
 }

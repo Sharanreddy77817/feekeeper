@@ -93,3 +93,9 @@
 - A promotion must use exactly one discount form (percentage or flat amount); discounts are capped at the fee amount. A supplied promotion must be active, within its inclusive date window, and match any plan duration restriction. Unknown codes return 404 within the authenticated tenant scope.
 - API plans accept 1–3650 days to support annual and custom cycles. The UI offers the common 30/90/180/365 day choices.
 - Reminder dates and status calculation use each tenant's configured time zone. Payment business dates continue using the injected application clock.
+
+## Digital receipt redesign
+
+- Redesigned the server-generated PDF receipt (`ReceiptService`) to follow standard gym and coaching/tutorial academy receipt conventions on single-page A5 format.
+- Included institute identity branding, official verified stamp badge (`PAID IN FULL`), 4-column metadata ribbon (receipt number, payment date, payment mode, verified status), 2-column cards for member profile and renewed validity schedule, itemized fee particulars table with promotional discounts, net amount panel, standard center regulations/terms (non-refundable policy, desk entry/biometric check-in, batch expiry), and digital authorization seal.
+- Enhanced web payment confirmation modal into a structured digital receipt card with instant preview, print slip, PDF download, and formatted WhatsApp receipt.

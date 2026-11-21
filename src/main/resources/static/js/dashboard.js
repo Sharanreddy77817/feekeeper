@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('offer-form').addEventListener('submit',saveOffer);
     document.getElementById('retry-offers').addEventListener('click',loadOffers);
 
-    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';state.timeZone=s.timeZone||'Asia/Kolkata';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
+    FeeKeeperApi.request('/api/tenant/settings').then(function(s){state.businessName=s.businessName||'';state.currency=s.currencyCode||'INR';state.currencySymbol=s.currencySymbol||'₹';state.timeZone=s.timeZone||'Asia/Kolkata';loadSummary();loadMembers();}).catch(function(){loadSummary();loadMembers();});
     loadOffers();
 
     async function loadSummary() {
@@ -244,6 +244,13 @@ document.addEventListener('DOMContentLoaded', function () {
             state.payment.result = result; state.payment.member.expiryDate = result.newExpiryDate; state.payment.member.status = 'ACTIVE';
             renderMembers(Array.from(state.members.values())); loadSummary();
             paymentForm.hidden = true; show('payment-success');
+            const bizEl = document.getElementById('receipt-biz-name'); if (bizEl) bizEl.textContent = state.businessName || 'Gym & Academy Desk';
+            const numEl = document.getElementById('receipt-number-val'); if (numEl) numEl.textContent = result.receiptNumber;
+            const memEl = document.getElementById('receipt-member-val'); if (memEl) memEl.textContent = state.payment.member.fullName;
+            const planEl = document.getElementById('receipt-plan-val'); if (planEl) planEl.textContent = state.payment.member.planName + ' (' + state.payment.member.planDurationDays + ' days)';
+            const modeEl = document.getElementById('receipt-mode-val'); if (modeEl) modeEl.textContent = result.paymentMode === 'UPI' ? 'UPI / Online' : 'Cash Counter';
+            const amtEl = document.getElementById('receipt-amount-val'); if (amtEl) amtEl.textContent = money(result.amountPaid);
+            const expEl = document.getElementById('receipt-expiry-val'); if (expEl) expEl.textContent = formatDate(result.newExpiryDate);
             document.getElementById('payment-success-detail').textContent = result.receiptNumber + ' · New expiry ' + formatDate(result.newExpiryDate);
             document.getElementById('share-receipt').href = receiptWhatsAppUrl(state.payment.member, result);
             FeeKeeperApi.showToast('Payment recorded successfully.');
@@ -272,8 +279,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function receiptWhatsAppUrl(member, result) {
         let digits = member.phone.replace(/\D/g, ''); if (digits.length === 10) digits = '91' + digits;
-        const text = 'Payment received by FeeKeeper. Receipt ' + result.receiptNumber + ', amount ' + money(result.amountPaid) + ', new expiry ' + formatDate(result.newExpiryDate) + '.';
-        return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(text);
+        const bizName = state.businessName || 'Gym & Coaching Academy';
+        const lines = [
+            '🧾 *OFFICIAL PAYMENT RECEIPT*',
+            '━━━━━━━━━━━━━━━━━━━━━',
+            '🏢 *Center:* ' + bizName,
+            '👤 *Member/Student:* ' + member.fullName,
+            '📄 *Receipt No:* ' + result.receiptNumber,
+            '💳 *Plan:* ' + member.planName + ' (' + member.planDurationDays + ' days)',
+            '💰 *Amount Paid:* ' + money(result.amountPaid) + ' (' + (result.paymentMode || 'Paid') + ')',
+            '📅 *Renewed Validity:* ' + formatDate(result.newExpiryDate),
+            '━━━━━━━━━━━━━━━━━━━━━',
+            '✅ *Status:* Paid in Full · Access Active',
+            'Thank you for your payment! Please retain this receipt for desk entry.'
+        ];
+        return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(lines.join('\n'));
     }
 
     function validateMember(value) {

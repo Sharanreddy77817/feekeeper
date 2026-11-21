@@ -98,7 +98,62 @@
             <div id="payment-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
             <button id="confirm-payment" class="mt-6 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white disabled:opacity-60">Confirm payment</button>
         </form>
-        <section id="payment-success" class="mt-5 hidden rounded-2xl border border-green-200 bg-green-50 p-4" aria-live="polite"><h3 class="font-black text-green-900">Payment recorded</h3><p id="payment-success-detail" class="mt-1 text-sm text-green-800"></p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button id="download-receipt" class="rounded-lg bg-white px-3 py-2 text-sm font-bold text-green-900 shadow-sm">Download receipt</button><button id="print-receipt" class="rounded-lg bg-white px-3 py-2 text-sm font-bold text-green-900 shadow-sm">Print receipt</button><a id="share-receipt" target="_blank" rel="noopener" class="rounded-lg bg-green-700 px-3 py-2 text-center text-sm font-bold text-white">WhatsApp receipt</a></div></section>
+        <section id="payment-success" class="mt-5 hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-live="polite">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm">✓</span>
+                    <div>
+                        <h3 class="font-black text-slate-900 leading-tight">Digital Receipt Generated</h3>
+                        <p id="receipt-biz-name" class="text-xs font-semibold text-indigo-600 uppercase tracking-wide"></p>
+                    </div>
+                </div>
+                <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700 border border-emerald-200">PAID</span>
+            </div>
+
+            <div class="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-3.5 space-y-2 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Receipt No:</span>
+                    <span id="receipt-number-val" class="font-mono font-bold text-slate-900"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Member / Student:</span>
+                    <span id="receipt-member-val" class="font-bold text-slate-900"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Plan &amp; Duration:</span>
+                    <span id="receipt-plan-val" class="font-medium text-slate-700"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Payment Mode:</span>
+                    <span id="receipt-mode-val" class="font-bold text-slate-700"></span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-slate-200/80">
+                    <span class="font-bold text-slate-700">Amount Paid:</span>
+                    <span id="receipt-amount-val" class="text-base font-black text-emerald-600"></span>
+                </div>
+                <div class="flex justify-between items-center rounded-lg bg-emerald-50 px-2.5 py-1.5 text-emerald-800">
+                    <span class="font-bold">Renewed Expiry:</span>
+                    <span id="receipt-expiry-val" class="font-black"></span>
+                </div>
+            </div>
+
+            <p id="payment-success-detail" class="sr-only"></p>
+
+            <div class="mt-4 grid gap-2 sm:grid-cols-3">
+                <button id="download-receipt" type="button" class="flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 active:scale-95 transition">
+                    <svg class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Download PDF
+                </button>
+                <button id="print-receipt" type="button" class="flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 active:scale-95 transition">
+                    <svg class="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Print Slip
+                </button>
+                <a id="share-receipt" target="_blank" rel="noopener" class="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2.5 text-center text-xs font-bold text-white shadow-sm hover:bg-emerald-700 active:scale-95 transition">
+                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                    WhatsApp Receipt
+                </a>
+            </div>
+        </section>
     </div>
 </dialog>
 
